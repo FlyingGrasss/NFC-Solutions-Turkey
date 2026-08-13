@@ -38,6 +38,7 @@ export type ProfileFields = {
   locationUrl: string | null;
   locationEnabled: boolean;
   locationFullWidth: boolean;
+  googleReviewUrl: string | null;
   contactEnabled: boolean;
   contactFullWidth: boolean;
   facilitiesHeading: string;
@@ -139,12 +140,14 @@ export function parseProfileFields(formData: FormData): ParseResult<ProfileField
   const linkedin = optionalUrl(formData, "linkedinUrl", "LinkedIn");
   const instagram = optionalUrl(formData, "instagramUrl", "Instagram");
   const location = optionalUrl(formData, "locationUrl", "Konum");
+  const googleReview = optionalUrl(formData, "googleReviewUrl", "Google yorum bağlantısı");
   const facilities = parseFacilities(formData);
 
   if ("error" in image) return image;
   if ("error" in linkedin) return linkedin;
   if ("error" in instagram) return instagram;
   if ("error" in location) return location;
+  if ("error" in googleReview) return googleReview;
   if ("error" in facilities) return facilities;
 
   const emailValue = textValue(formData, "email");
@@ -183,6 +186,7 @@ export function parseProfileFields(formData: FormData): ParseResult<ProfileField
       locationUrl: location.value,
       locationEnabled: checkboxValue(formData, "locationEnabled"),
       locationFullWidth: checkboxValue(formData, "locationFullWidth"),
+      googleReviewUrl: googleReview.value,
       contactEnabled: checkboxValue(formData, "contactEnabled"),
       contactFullWidth: checkboxValue(formData, "contactFullWidth"),
       facilitiesHeading,

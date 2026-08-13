@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 
 export const PROFILE_SESSION_COOKIE = "gelir-gider-profile-session";
-const PROFILE_SESSION_MAX_AGE = 60 * 60 * 24 * 30;
+const PROFILE_SESSION_MAX_AGE = 60 * 60 * 24 * 400;
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");

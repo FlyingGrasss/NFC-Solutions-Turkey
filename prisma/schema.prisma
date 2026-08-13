@@ -19,6 +19,8 @@ model User {
   accounts      Account[]
   transactions  Transaction[]
   leads         Lead[]
+  stockItems    StockItem[]
+  stockChanges  StockChange[]
 
   @@map("user")
 }
@@ -60,6 +62,7 @@ model Profile {
   locationUrl            String?
   locationEnabled        Boolean          @default(true)
   locationFullWidth      Boolean          @default(true)
+  googleReviewUrl        String?
   contactEnabled         Boolean          @default(true)
   contactFullWidth       Boolean          @default(true)
   facilitiesHeading      String           @default("Bağlantılar")
@@ -180,6 +183,35 @@ model Lead {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, followUpAt])
+}
+
+model StockItem {
+  id        String        @id @default(cuid())
+  name      String
+  quantity  Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  changes   StockChange[]
+
+  @@unique([userId, name])
+  @@index([userId, updatedAt])
+}
+
+model StockChange {
+  id           String    @id @default(cuid())
+  amount       Int
+  title        String
+  createdAt    DateTime  @default(now())
+  createdByName String   @default("Bilinmiyor")
+  stockItemId  String
+  stockItem    StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([stockItemId, createdAt])
 }
 
 model ContactMessage {

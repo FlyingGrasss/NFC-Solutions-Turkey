@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { generateGoogleReviewLinkAction } from "@/app/google-review-actions";
 import type { ProfileFormState } from "@/app/profile-actions";
 import { profileColorSchemes, type ProfileColorScheme } from "@/lib/profile";
 import { eyebrowClass, fieldInputClass, fieldLabelClass } from "@/lib/ui";
@@ -39,6 +40,7 @@ export type EditableProfile = {
   locationUrl: string | null;
   locationEnabled: boolean;
   locationFullWidth: boolean;
+  googleReviewUrl: string | null;
   contactEnabled: boolean;
   contactFullWidth: boolean;
   facilitiesHeading: string;
@@ -146,11 +148,107 @@ const emptyProfile: EditableProfile = {
   locationUrl: null,
   locationEnabled: true,
   locationFullWidth: true,
+  googleReviewUrl: null,
   contactEnabled: true,
   contactFullWidth: true,
   facilitiesHeading: "Bağlantılar",
   facilities: [],
 };
+
+function GoogleReviewSetting({ value }: { value: string | null }) {
+  const [mapsUrl, setMapsUrl] = useState("");
+  const [reviewUrl, setReviewUrl] = useState(value ?? "");
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function generateLink() {
+    setPending(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.set("mapsUrl", mapsUrl);
+      const result = await generateGoogleReviewLinkAction(formData);
+
+      if (result.error) {
+        setError(result.error);
+      } else if (result.reviewUrl) {
+        setReviewUrl(result.reviewUrl);
+        setMessage(
+          result.placeName
+            ? `${result.placeName} için yorum bağlantısı hazır.`
+            : "Yorum bağlantısı hazır.",
+        );
+      }
+    } catch {
+      setError("Bağlantı oluşturulamadı. Lütfen tekrar deneyin.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function copyLink() {
+    if (!reviewUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(reviewUrl);
+      setMessage("Bağlantı panoya kopyalandı.");
+    } catch {
+      setError("Bağlantı kopyalanamadı.");
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-black text-slate-800">Google yorum bağlantısı</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">
+            Maps bağlantısını yapıştırın; yorum bağlantısını sizin için çıkaralım.
+          </p>
+        </div>
+        {reviewUrl ? (
+          <button
+            type="button"
+            onClick={copyLink}
+            className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+          >
+            Kopyala
+          </button>
+        ) : null}
+      </div>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <input
+          type="url"
+          value={mapsUrl}
+          onChange={(event) => setMapsUrl(event.target.value)}
+          placeholder="https://maps.app.goo.gl/..."
+          className={fieldInputClass}
+        />
+        <button
+          type="button"
+          onClick={generateLink}
+          disabled={pending}
+          className="shrink-0 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-60"
+        >
+          {pending ? "Hazırlanıyor…" : "Bağlantı oluştur"}
+        </button>
+      </div>
+      <input
+        name="googleReviewUrl"
+        type="url"
+        value={reviewUrl}
+        onChange={(event) => setReviewUrl(event.target.value)}
+        placeholder="Oluşturulan yorum bağlantısı burada görünür"
+        className={`${fieldInputClass} mt-3`}
+      />
+      {message ? <p className="mt-2 text-xs font-semibold text-emerald-700">{message}</p> : null}
+      {error ? <p role="alert" className="mt-2 text-xs font-semibold text-rose-600">{error}</p> : null}
+    </div>
+  );
+}
 
 export function ProfileEditorForm({
   action,
@@ -181,6 +279,9 @@ export function ProfileEditorForm({
   return (
     <form action={formAction} className="space-y-7">
       {profile.id ? <input type="hidden" name="id" value={profile.id} /> : null}
+      {mode === "owner-edit" ? (
+        <input type="hidden" name="googleReviewUrl" value={profile.googleReviewUrl ?? ""} />
+      ) : null}
       <input
         type="hidden"
         name="facilities"
@@ -285,6 +386,7 @@ export function ProfileEditorForm({
           <ButtonSetting label="LinkedIn" valueName="linkedinUrl" enabledName="linkedinEnabled" fullWidthName="linkedinFullWidth" value={profile.linkedinUrl} enabled={profile.linkedinEnabled} fullWidth={profile.linkedinFullWidth} placeholder="https://linkedin.com/in/..." />
           <ButtonSetting label="Instagram" valueName="instagramUrl" enabledName="instagramEnabled" fullWidthName="instagramFullWidth" value={profile.instagramUrl} enabled={profile.instagramEnabled} fullWidth={profile.instagramFullWidth} placeholder="https://instagram.com/..." />
           <ButtonSetting label="Konum" valueName="locationUrl" enabledName="locationEnabled" fullWidthName="locationFullWidth" value={profile.locationUrl} enabled={profile.locationEnabled} fullWidth={profile.locationFullWidth} placeholder="https://maps.google.com/..." />
+          {mode !== "owner-edit" ? <GoogleReviewSetting value={profile.googleReviewUrl} /> : null}
           <ButtonSetting label="Kişilere Ekle" enabledName="contactEnabled" fullWidthName="contactFullWidth" enabled={profile.contactEnabled} fullWidth={profile.contactFullWidth} />
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">

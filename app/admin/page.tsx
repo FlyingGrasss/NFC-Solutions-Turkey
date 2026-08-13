@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { signOutAction } from "@/app/actions";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { ComparisonSection } from "@/components/comparison-section";
 import { DeleteTransactionButton } from "@/components/delete-transaction-button";
 import { EditTransactionModal } from "@/components/edit-transaction-modal";
@@ -28,7 +28,7 @@ const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
 
 export default async function AdminPage() {
   const session = await requireSession();
-  const currentMember = await requireMember();
+  await requireMember();
   const [transactions, allTransactions, members, contactMessages] = await Promise.all([
     prisma.transaction.findMany({
       where: { userId: session.user.id },
@@ -96,31 +96,21 @@ export default async function AdminPage() {
   return (
     <main className="min-h-screen bg-[#f4f7f5] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-lg font-black text-emerald-700">₺</div>
-            <div>
-              <p className="text-sm font-bold tracking-tight text-slate-950">Yönetim</p>
-              <p className="text-xs text-slate-400">Gelir Gider ve profiller</p>
-            </div>
+        <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className={eyebrowClass}>Yönetim</p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Gelir Gider</h1>
+            <p className="mt-2 text-sm text-slate-500">Gelir, gider ve takiplerini tek yerde yönet.</p>
           </div>
-          <form action={signOutAction}>
-            <button type="submit" className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-white hover:text-slate-900">Çıkış yap</button>
-          </form>
+          <div className="flex items-center gap-2">
+            <p className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm">{transactions.length} kayıt</p>
+            <AdminLogoutButton />
+          </div>
         </header>
 
         <AdminNav active="overview" />
 
-        <section className="mb-8 mt-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <p className={eyebrowClass}>Genel bakış</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Merhaba, {currentMember.name}</h1>
-            <p className="mt-2 text-sm text-slate-500">Gelir, gider ve takiplerini tek yerde yönet.</p>
-          </div>
-          <p className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm">{transactions.length} kayıt</p>
-        </section>
-
-        <section className="mb-8 grid gap-4 sm:grid-cols-3">
+        <section className="mb-8 mt-6 grid gap-4 sm:grid-cols-3">
           <div className="min-h-42 rounded-3xl border border-slate-900 bg-slate-900 p-5 text-white shadow-[0_12px_38px_rgb(25_55_36_/_0.08)]">
             <p className="text-xs font-extrabold uppercase tracking-wide text-white/60">Bakiye</p>
             <p className="mt-3 text-[clamp(1.5rem,3vw,2rem)] font-black tracking-[-0.04em]">{currency.format(balance / 100)}</p>

@@ -12,6 +12,7 @@ import {
 } from "@/lib/auth-helpers";
 
 const SHARED_AUTH_EMAIL = "gelir-gider@local.test";
+const PERSISTENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 400;
 
 export type LoginState = {
   error?: string;
@@ -102,7 +103,7 @@ export async function signInAction(
 
     (await cookies()).set(MEMBER_COOKIE, member.id, {
       httpOnly: true,
-      maxAge: 60 * 60 * 24 * 399,
+      maxAge: PERSISTENT_COOKIE_MAX_AGE,
       path: "/",
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",

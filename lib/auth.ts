@@ -10,6 +10,7 @@ if (!authSecret) {
 }
 
 const authUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+const PERSISTENT_SESSION_AGE = 60 * 60 * 24 * 400;
 
 export const auth = betterAuth({
   secret: authSecret,
@@ -24,7 +25,7 @@ export const auth = betterAuth({
   },
   session: {
     // Browsers cap cookie Max-Age at 400 days. Rolling refresh keeps this long-lived.
-    expiresIn: 60 * 60 * 24 * 399,
+    expiresIn: PERSISTENT_SESSION_AGE,
     updateAge: 60 * 60 * 24 * 30,
   },
   plugins: [nextCookies()],
