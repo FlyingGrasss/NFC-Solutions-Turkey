@@ -17,9 +17,9 @@ export function AdminHeader({
       <div className="min-w-0">
         <p className={eyebrowClass}>{eyebrow}</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">{title}</h1>
-        <p className="mt-2 text-sm text-slate-500">{description}</p>
+        <p className="mt-2 min-h-5 truncate text-sm text-slate-500" title={description}>{description}</p>
       </div>
-      <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">{children}</div>
+      <div className="flex flex-wrap items-end justify-start gap-2 sm:justify-end">{children}</div>
     </header>
   );
 }
