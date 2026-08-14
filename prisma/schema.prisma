@@ -62,6 +62,10 @@ model Profile {
   locationUrl            String?
   locationEnabled        Boolean          @default(true)
   locationFullWidth      Boolean          @default(true)
+  telegramUrl            String?
+  telegramEnabled        Boolean          @default(false)
+  telegramFullWidth      Boolean          @default(false)
+  buttonOrder            String?
   googleReviewUrl        String?
   contactEnabled         Boolean          @default(true)
   contactFullWidth       Boolean          @default(true)
@@ -69,6 +73,7 @@ model Profile {
   createdAt              DateTime         @default(now())
   updatedAt              DateTime         @updatedAt
   facilities             ProfileFacility[]
+  customButtons          ProfileCustomButton[]
   sessions               ProfileSession[]
 }
 
@@ -80,6 +85,20 @@ model ProfileFacility {
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
+  @@index([profileId, sortOrder])
+}
+
+model ProfileCustomButton {
+  id         String   @id @default(cuid())
+  buttonKey  String
+  label      String
+  url        String
+  fullWidth  Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, buttonKey])
   @@index([profileId, sortOrder])
 }
 

@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import type { ProfileFormState } from "@/app/profile-actions";
 import { profileColorSchemes, type ProfileColorScheme } from "@/lib/profile";
+import { normalizeProfileButtonOrder, profileButtonLabels } from "@/lib/profile-buttons";
 import { eyebrowClass, fieldInputClass, fieldLabelClass } from "@/lib/ui";
 
 type ProfileAction = (
@@ -39,8 +40,13 @@ export type EditableProfile = {
   locationUrl: string | null;
   locationEnabled: boolean;
   locationFullWidth: boolean;
+  telegramUrl: string | null;
+  telegramEnabled: boolean;
+  telegramFullWidth: boolean;
   contactEnabled: boolean;
   contactFullWidth: boolean;
+  buttonOrder: string | null;
+  customButtons: Array<{ buttonKey: string; label: string; url: string; fullWidth: boolean }>;
   facilitiesHeading: string;
   facilities: Array<{ id?: string; name: string; url: string }>;
 };
@@ -49,6 +55,13 @@ type FacilityDraft = {
   key: string;
   name: string;
   url: string;
+};
+
+type CustomButtonDraft = {
+  key: string;
+  label: string;
+  url: string;
+  fullWidth: boolean;
 };
 
 function CheckControl({
@@ -146,8 +159,13 @@ const emptyProfile: EditableProfile = {
   locationUrl: null,
   locationEnabled: true,
   locationFullWidth: true,
+  telegramUrl: null,
+  telegramEnabled: false,
+  telegramFullWidth: false,
   contactEnabled: true,
   contactFullWidth: true,
+  buttonOrder: null,
+  customButtons: [],
   facilitiesHeading: "Bağlantılar",
   facilities: [],
 };
@@ -169,6 +187,20 @@ export function ProfileEditorForm({
       url: facility.url,
     })),
   );
+  const [customButtons, setCustomButtons] = useState<CustomButtonDraft[]>(() =>
+    profile.customButtons.map((button) => ({
+      key: button.buttonKey,
+      label: button.label,
+      url: button.url,
+      fullWidth: button.fullWidth,
+    })),
+  );
+  const [buttonOrder, setButtonOrder] = useState<string[]>(() =>
+    normalizeProfileButtonOrder(
+      profile.buttonOrder,
+      profile.customButtons.map((button) => button.buttonKey),
+    ),
+  );
 
   function updateFacility(index: number, field: "name" | "url", value: string) {
     setFacilities((current) =>
@@ -176,6 +208,40 @@ export function ProfileEditorForm({
         facilityIndex === index ? { ...facility, [field]: value } : facility,
       ),
     );
+  }
+
+  function moveButton(key: string, direction: -1 | 1) {
+    setButtonOrder((current) => {
+      const index = current.indexOf(key);
+      const nextIndex = index + direction;
+
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) {
+        return current;
+      }
+
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  }
+
+  function addCustomButton() {
+    const key = `custom-${crypto.randomUUID()}`;
+    setCustomButtons((current) => [...current, { key, label: "", url: "", fullWidth: false }]);
+    setButtonOrder((current) => [...current, key]);
+  }
+
+  function updateCustomButton(index: number, field: keyof Omit<CustomButtonDraft, "key">, value: string | boolean) {
+    setCustomButtons((current) =>
+      current.map((button, buttonIndex) =>
+        buttonIndex === index ? { ...button, [field]: value } : button,
+      ),
+    );
+  }
+
+  function removeCustomButton(key: string) {
+    setCustomButtons((current) => current.filter((button) => button.key !== key));
+    setButtonOrder((current) => current.filter((buttonKey) => buttonKey !== key));
   }
 
   return (
@@ -186,6 +252,8 @@ export function ProfileEditorForm({
         name="facilities"
         value={JSON.stringify(facilities.map(({ name, url }) => ({ name, url })))}
       />
+      <input type="hidden" name="buttonOrder" value={JSON.stringify(buttonOrder)} />
+      <input type="hidden" name="customButtons" value={JSON.stringify(customButtons)} />
 
       <section className="border-t border-slate-100 pt-6 first:border-t-0 first:pt-0">
         <div className="mb-4">
@@ -276,11 +344,30 @@ export function ProfileEditorForm({
         <div className="mb-4">
           <p className={eyebrowClass}>İletişim kartları</p>
           <h2 className="mt-1 text-xl font-black text-slate-950">Butonlar</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-500">Göster seçimi butonu açar; tam genişlik seçimi mobilde butonu tek satıra taşır.</p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">Butonları açıp kapatın, özel bağlantılar ekleyin ve sıralarını belirleyin.</p>
         </div>
         <div className="grid gap-3">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-black text-slate-800">Buton sırası</p>
+            <p className="mt-1 text-xs leading-5 text-slate-400">Yukarı ve aşağı oklarıyla profil sayfasındaki görünüm sırasını değiştirin.</p>
+            <div className="mt-3 grid gap-2">
+              {buttonOrder.map((key, index) => {
+                const customButton = customButtons.find((button) => button.key === key);
+                const label = customButton?.label || profileButtonLabels[key as keyof typeof profileButtonLabels] || "Özel buton";
+
+                return (
+                  <div key={key} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                    <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-700">{label}</span>
+                    <button type="button" onClick={() => moveButton(key, -1)} disabled={index === 0} aria-label={`${label} yukarı taşı`} className="rounded-lg border border-slate-200 px-2 py-1 text-sm font-bold text-slate-500 transition hover:bg-slate-50 disabled:opacity-30">↑</button>
+                    <button type="button" onClick={() => moveButton(key, 1)} disabled={index === buttonOrder.length - 1} aria-label={`${label} aşağı taşı`} className="rounded-lg border border-slate-200 px-2 py-1 text-sm font-bold text-slate-500 transition hover:bg-slate-50 disabled:opacity-30">↓</button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           <ButtonSetting label="Ara" valueName="callNumber" enabledName="callEnabled" fullWidthName="callFullWidth" value={profile.callNumber} enabled={profile.callEnabled} fullWidth={profile.callFullWidth} placeholder="+90 5xx xxx xx xx" />
           <ButtonSetting label="WhatsApp" valueName="whatsappNumber" enabledName="whatsappEnabled" fullWidthName="whatsappFullWidth" value={profile.whatsappNumber} enabled={profile.whatsappEnabled} fullWidth={profile.whatsappFullWidth} placeholder="905xx xxx xx xx" />
+          <ButtonSetting label="Telegram" valueName="telegramUrl" enabledName="telegramEnabled" fullWidthName="telegramFullWidth" value={profile.telegramUrl} enabled={profile.telegramEnabled} fullWidth={profile.telegramFullWidth} placeholder="https://t.me/kullanici" />
           <ButtonSetting label="Mail" valueName="email" enabledName="emailEnabled" fullWidthName="emailFullWidth" value={profile.email} enabled={profile.emailEnabled} fullWidth={profile.emailFullWidth} placeholder="isim@firma.com" />
           <ButtonSetting label="LinkedIn" valueName="linkedinUrl" enabledName="linkedinEnabled" fullWidthName="linkedinFullWidth" value={profile.linkedinUrl} enabled={profile.linkedinEnabled} fullWidth={profile.linkedinFullWidth} placeholder="https://linkedin.com/in/..." />
           <ButtonSetting label="Instagram" valueName="instagramUrl" enabledName="instagramEnabled" fullWidthName="instagramFullWidth" value={profile.instagramUrl} enabled={profile.instagramEnabled} fullWidth={profile.instagramFullWidth} placeholder="https://instagram.com/..." />
@@ -301,6 +388,43 @@ export function ProfileEditorForm({
               className={`${fieldInputClass} mt-3 uppercase`}
             />
             <p className="mt-2 text-xs leading-5 text-slate-400">Profilde mobil uyumlu bir kopyalama kartı olarak gösterilir.</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-black text-slate-800">Özel butonlar</p>
+                <p className="mt-1 text-xs leading-5 text-slate-400">Kendi başlığınız ve bağlantınızla yeni butonlar ekleyin.</p>
+              </div>
+              <button type="button" onClick={addCustomButton} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600 transition hover:border-slate-400 hover:bg-white">+ Özel buton ekle</button>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {customButtons.length === 0 ? <p className="rounded-xl bg-white px-3 py-3 text-sm text-slate-400">Henüz özel buton eklenmedi.</p> : null}
+              {customButtons.map((button, index) => (
+                <div key={button.key} className="rounded-2xl border border-slate-200 bg-white p-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor={`custom-button-label-${index}`} className={fieldLabelClass}>Buton adı</label>
+                      <input id={`custom-button-label-${index}`} value={button.label} onChange={(event) => updateCustomButton(index, "label", event.target.value)} maxLength={80} placeholder="Web sitesi" className={fieldInputClass} />
+                    </div>
+                    <div>
+                      <label htmlFor={`custom-button-url-${index}`} className={fieldLabelClass}>Bağlantı</label>
+                      <input id={`custom-button-url-${index}`} type="url" value={button.url} onChange={(event) => updateCustomButton(index, "url", event.target.value)} placeholder="https://..." className={fieldInputClass} />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                      <input type="checkbox" checked={button.fullWidth} onChange={(event) => updateCustomButton(index, "fullWidth", event.target.checked)} className="h-4 w-4 accent-emerald-600" />
+                      Tam genişlik
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={() => removeCustomButton(button.key)} className="rounded-xl px-3 py-2 text-sm font-bold text-rose-500 transition hover:bg-rose-50">Kaldır</button>
+                      <button type="button" onClick={() => moveButton(button.key, -1)} className="rounded-lg border border-slate-200 px-2 py-1 text-sm font-bold text-slate-500 transition hover:bg-slate-50">↑</button>
+                      <button type="button" onClick={() => moveButton(button.key, 1)} className="rounded-lg border border-slate-200 px-2 py-1 text-sm font-bold text-slate-500 transition hover:bg-slate-50">↓</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

@@ -33,7 +33,10 @@ export default async function ProfileAdminPage({ params }: ProfileAdminPageProps
   const { slug } = await params;
   const profile = await prisma.profile.findUnique({
     where: { slug },
-    include: { facilities: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      facilities: { orderBy: { sortOrder: "asc" } },
+      customButtons: { orderBy: { sortOrder: "asc" } },
+    },
   });
 
   if (!profile) {

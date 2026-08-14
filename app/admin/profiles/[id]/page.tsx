@@ -27,7 +27,10 @@ export default async function EditProfilePage({ params }: EditProfilePageProps) 
   const { id } = await params;
   const profile = await prisma.profile.findUnique({
     where: { id },
-    include: { facilities: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      facilities: { orderBy: { sortOrder: "asc" } },
+      customButtons: { orderBy: { sortOrder: "asc" } },
+    },
   });
 
   if (!profile) {

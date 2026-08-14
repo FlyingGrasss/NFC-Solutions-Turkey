@@ -7,8 +7,16 @@ import {
   normalizeProfileColorScheme,
   type ProfileFacilityInput,
 } from "@/lib/profile";
+import { defaultProfileButtonOrder, normalizeProfileButtonOrder } from "@/lib/profile-buttons";
 
 type ParseResult<T> = { value: T } | { error: string };
+
+export type ProfileCustomButtonInput = {
+  key: string;
+  label: string;
+  url: string;
+  fullWidth: boolean;
+};
 
 export type ProfileFields = {
   slug: string;
@@ -38,8 +46,13 @@ export type ProfileFields = {
   locationUrl: string | null;
   locationEnabled: boolean;
   locationFullWidth: boolean;
+  telegramUrl: string | null;
+  telegramEnabled: boolean;
+  telegramFullWidth: boolean;
   contactEnabled: boolean;
   contactFullWidth: boolean;
+  buttonOrder: string[];
+  customButtons: ProfileCustomButtonInput[];
   facilitiesHeading: string;
   facilities: ProfileFacilityInput[];
 };
@@ -113,6 +126,64 @@ function parseFacilities(formData: FormData): ParseResult<ProfileFacilityInput[]
   return { value: facilities };
 }
 
+function parseCustomButtons(formData: FormData): ParseResult<ProfileCustomButtonInput[]> {
+  const value = formData.get("customButtons");
+
+  if (typeof value !== "string" || !value.trim()) {
+    return { value: [] };
+  }
+
+  let rows: unknown;
+
+  try {
+    rows = JSON.parse(value);
+  } catch {
+    return { error: "Özel butonlar okunamadı." };
+  }
+
+  if (!Array.isArray(rows)) {
+    return { error: "Özel butonlar geçersiz." };
+  }
+
+  const buttons: ProfileCustomButtonInput[] = [];
+  const keys = new Set<string>();
+
+  for (const row of rows.slice(0, 30)) {
+    if (!row || typeof row !== "object") {
+      return { error: "Özel butonlar geçersiz." };
+    }
+
+    const record = row as Record<string, unknown>;
+    const key = typeof record.key === "string" ? record.key.trim() : "";
+    const label = typeof record.label === "string" ? record.label.trim().slice(0, 80) : "";
+    const rawUrl = typeof record.url === "string" ? record.url.trim() : "";
+    const url = normalizeHttpUrl(rawUrl);
+
+    if (
+      !key ||
+      !/^[a-zA-Z0-9_-]{1,80}$/.test(key) ||
+      keys.has(key) ||
+      defaultProfileButtonOrder.includes(key as (typeof defaultProfileButtonOrder)[number])
+    ) {
+      return { error: "Özel buton anahtarı geçersiz." };
+    }
+
+    if (!label || !url) {
+      return { error: "Her özel buton için ad ve geçerli bir URL girin." };
+    }
+
+    keys.add(key);
+    buttons.push({
+      key,
+      label,
+      url,
+      fullWidth: record.fullWidth === true,
+    });
+  }
+
+  return { value: buttons };
+}
+
 export function parseProfileFields(formData: FormData): ParseResult<ProfileFields> {
   const slug = normalizeSlug(textValue(formData, "slug"));
   const name = textValue(formData, "name").slice(0, 120);
@@ -139,13 +210,22 @@ export function parseProfileFields(formData: FormData): ParseResult<ProfileField
   const linkedin = optionalUrl(formData, "linkedinUrl", "LinkedIn");
   const instagram = optionalUrl(formData, "instagramUrl", "Instagram");
   const location = optionalUrl(formData, "locationUrl", "Konum");
+  const telegram = optionalUrl(formData, "telegramUrl", "Telegram");
   const facilities = parseFacilities(formData);
+  const customButtons = parseCustomButtons(formData);
 
   if ("error" in image) return image;
   if ("error" in linkedin) return linkedin;
   if ("error" in instagram) return instagram;
   if ("error" in location) return location;
+  if ("error" in telegram) return telegram;
   if ("error" in facilities) return facilities;
+  if ("error" in customButtons) return customButtons;
+
+  const buttonOrder = normalizeProfileButtonOrder(
+    textValue(formData, "buttonOrder"),
+    customButtons.value.map((button) => button.key),
+  );
 
   const emailValue = textValue(formData, "email");
   const email = normalizeEmail(emailValue);
@@ -183,8 +263,13 @@ export function parseProfileFields(formData: FormData): ParseResult<ProfileField
       locationUrl: location.value,
       locationEnabled: checkboxValue(formData, "locationEnabled"),
       locationFullWidth: checkboxValue(formData, "locationFullWidth"),
+      telegramUrl: telegram.value,
+      telegramEnabled: checkboxValue(formData, "telegramEnabled"),
+      telegramFullWidth: checkboxValue(formData, "telegramFullWidth"),
       contactEnabled: checkboxValue(formData, "contactEnabled"),
       contactFullWidth: checkboxValue(formData, "contactFullWidth"),
+      buttonOrder,
+      customButtons: customButtons.value,
       facilitiesHeading,
       facilities: facilities.value,
     },

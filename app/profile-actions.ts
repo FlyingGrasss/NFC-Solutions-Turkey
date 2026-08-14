@@ -10,7 +10,11 @@ import {
   createProfileSession,
   requireProfileAdmin,
 } from "@/lib/profile-auth";
-import { parseProfileFields, type ProfileFields } from "@/lib/profile-form";
+import {
+  parseProfileFields,
+  type ProfileCustomButtonInput,
+  type ProfileFields,
+} from "@/lib/profile-form";
 import { requireSession } from "@/lib/auth-helpers";
 
 export type ProfileFormState = {
@@ -38,12 +42,14 @@ function isUniqueConstraintError(error: unknown) {
 }
 
 function profileData(fields: ProfileFields) {
-  const { facilities, ...data } = fields;
+  const { facilities, customButtons, buttonOrder, ...data } = fields;
   void facilities;
+  void customButtons;
   // Keep empty optional titles compatible with already-generated Prisma clients
   // that still expect the pre-migration required field shape.
   return {
     ...data,
+    buttonOrder: JSON.stringify(buttonOrder),
     title: data.title ?? "",
   };
 }
@@ -59,6 +65,26 @@ async function replaceFacilities(
         name: facility.name,
         url: facility.url,
         sortOrder: index,
+        profileId,
+      })),
+    }),
+  ]);
+}
+
+async function replaceCustomButtons(
+  profileId: string,
+  buttons: ProfileCustomButtonInput[],
+  buttonOrder: string[],
+) {
+  await prisma.$transaction([
+    prisma.profileCustomButton.deleteMany({ where: { profileId } }),
+    prisma.profileCustomButton.createMany({
+      data: buttons.map((button) => ({
+        buttonKey: button.key,
+        label: button.label,
+        url: button.url,
+        fullWidth: button.fullWidth,
+        sortOrder: buttonOrder.indexOf(button.key),
         profileId,
       })),
     }),
@@ -111,6 +137,7 @@ export async function updateOwnedProfileAction(
       data: profileData(data),
     });
     await replaceFacilities(profile.id, data.facilities);
+    await replaceCustomButtons(profile.id, data.customButtons, data.buttonOrder);
   } catch (error) {
     console.error("[updateOwnedProfileAction] Profile update failed", error);
     return {
@@ -158,6 +185,15 @@ export async function createProfileAction(
             name: facility.name,
             url: facility.url,
             sortOrder: index,
+          })),
+        },
+        customButtons: {
+          create: parsed.value.customButtons.map((button) => ({
+            buttonKey: button.key,
+            label: button.label,
+            url: button.url,
+            fullWidth: button.fullWidth,
+            sortOrder: parsed.value.buttonOrder.indexOf(button.key),
           })),
         },
       },
@@ -216,6 +252,7 @@ export async function updateProfileAction(
       },
     });
     await replaceFacilities(id, parsed.value.facilities);
+    await replaceCustomButtons(id, parsed.value.customButtons, parsed.value.buttonOrder);
 
     if (password.value) {
       await prisma.profileSession.deleteMany({ where: { profileId: id } });

@@ -5,9 +5,11 @@ import {
   FaArrowUpRightFromSquare,
   FaEnvelope,
   FaInstagram,
+  FaLink,
   FaLinkedinIn,
   FaLocationDot,
   FaPhone,
+  FaTelegram,
   FaWhatsapp,
 } from "react-icons/fa6";
 import { AddToContactsButton } from "@/components/add-to-contacts-button";
@@ -19,6 +21,7 @@ import {
   phoneHref,
   whatsappHref,
 } from "@/lib/profile";
+import { normalizeProfileButtonOrder } from "@/lib/profile-buttons";
 import { absoluteUrl } from "@/lib/site";
 
 type ProfilePageProps = {
@@ -76,7 +79,10 @@ const themes = {
 async function getProfile(slug: string) {
   return prisma.profile.findUnique({
     where: { slug },
-    include: { facilities: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      facilities: { orderBy: { sortOrder: "asc" } },
+      customButtons: { orderBy: { sortOrder: "asc" } },
+    },
   });
 }
 
@@ -126,11 +132,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     notFound();
   }
 
+  const currentProfile = profile;
   const theme = themes[normalizeProfileColorScheme(profile.colorScheme)];
   const callHref = profile.callEnabled ? phoneHref(profile.callNumber) : null;
   const whatsappLink = profile.whatsappEnabled ? whatsappHref(profile.whatsappNumber) : null;
   const emailHref = profile.emailEnabled ? mailHref(profile.email) : null;
   const profileUrl = absoluteUrl(`/${profile.slug}`);
+  const buttonOrder = normalizeProfileButtonOrder(
+    profile.buttonOrder,
+    profile.customButtons.map((button) => button.buttonKey),
+  );
+  const customButtons = new Map(profile.customButtons.map((button) => [button.buttonKey, button]));
   const themeStyle = { "--profile-accent": theme.accent } as CSSProperties;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -147,9 +159,41 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       sameAs: [
         profile.instagramEnabled ? profile.instagramUrl : null,
         profile.linkedinEnabled ? profile.linkedinUrl : null,
+        profile.telegramEnabled ? profile.telegramUrl : null,
       ].filter(Boolean),
     },
   };
+
+  function renderButton(key: string) {
+    const customButton = customButtons.get(key);
+
+    if (customButton) {
+      return <ProfileLinkButton key={key} href={customButton.url} label={customButton.label} icon={<FaLink />} fullWidth={customButton.fullWidth} theme={theme} />;
+    }
+
+    switch (key) {
+      case "call":
+        return callHref ? <ProfileLinkButton key={key} href={callHref} label="Ara" icon={<FaPhone />} fullWidth={currentProfile.callFullWidth} theme={theme} /> : null;
+      case "whatsapp":
+        return whatsappLink ? <ProfileLinkButton key={key} href={whatsappLink} label="WhatsApp" icon={<FaWhatsapp />} fullWidth={currentProfile.whatsappFullWidth} theme={theme} /> : null;
+      case "telegram":
+        return currentProfile.telegramEnabled && currentProfile.telegramUrl ? <ProfileLinkButton key={key} href={currentProfile.telegramUrl} label="Telegram" icon={<FaTelegram />} fullWidth={currentProfile.telegramFullWidth} theme={theme} /> : null;
+      case "email":
+        return emailHref ? <ProfileLinkButton key={key} href={emailHref} label="Mail" icon={<FaEnvelope />} fullWidth={currentProfile.emailFullWidth} theme={theme} /> : null;
+      case "linkedin":
+        return currentProfile.linkedinEnabled && currentProfile.linkedinUrl ? <ProfileLinkButton key={key} href={currentProfile.linkedinUrl} label="LinkedIn" icon={<FaLinkedinIn />} fullWidth={currentProfile.linkedinFullWidth} theme={theme} /> : null;
+      case "contact":
+        return currentProfile.contactEnabled ? <AddToContactsButton key={key} name={currentProfile.name} title={currentProfile.title} title2={currentProfile.title2} phone={currentProfile.callNumber} email={currentProfile.email} url={profileUrl} fullWidth={currentProfile.contactFullWidth} theme={theme} /> : null;
+      case "location":
+        return currentProfile.locationEnabled && currentProfile.locationUrl ? <ProfileLinkButton key={key} href={currentProfile.locationUrl} label="Konum" icon={<FaLocationDot />} fullWidth={currentProfile.locationFullWidth} theme={theme} /> : null;
+      case "instagram":
+        return currentProfile.instagramEnabled && currentProfile.instagramUrl ? <ProfileLinkButton key={key} href={currentProfile.instagramUrl} label="Instagram" icon={<FaInstagram />} fullWidth={currentProfile.instagramFullWidth} theme={theme} /> : null;
+      case "iban":
+        return currentProfile.ibanEnabled && currentProfile.iban ? <CopyIbanButton key={key} iban={currentProfile.iban} theme={theme} /> : null;
+      default:
+        return null;
+    }
+  }
 
   return (
     <main className="relative isolate min-h-svh overflow-x-hidden text-slate-50" style={{ ...themeStyle, backgroundColor: theme.background }}>
@@ -168,14 +212,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         </header>
 
         <section className="mt-12 grid grid-cols-2 gap-3 sm:gap-4" aria-label="İletişim seçenekleri">
-          {callHref ? <ProfileLinkButton href={callHref} label="Ara" icon={<FaPhone />} fullWidth={profile.callFullWidth} theme={theme} /> : null}
-          {whatsappLink ? <ProfileLinkButton href={whatsappLink} label="WhatsApp" icon={<FaWhatsapp />} fullWidth={profile.whatsappFullWidth} theme={theme} /> : null}
-          {emailHref ? <ProfileLinkButton href={emailHref} label="Mail" icon={<FaEnvelope />} fullWidth={profile.emailFullWidth} theme={theme} /> : null}
-          {profile.linkedinEnabled && profile.linkedinUrl ? <ProfileLinkButton href={profile.linkedinUrl} label="LinkedIn" icon={<FaLinkedinIn />} fullWidth={profile.linkedinFullWidth} theme={theme} /> : null}
-          {profile.contactEnabled ? <AddToContactsButton name={profile.name} title={profile.title} title2={profile.title2} phone={profile.callNumber} email={profile.email} url={profileUrl} fullWidth={profile.contactFullWidth} theme={theme} /> : null}
-          {profile.locationEnabled && profile.locationUrl ? <ProfileLinkButton href={profile.locationUrl} label="Konum" icon={<FaLocationDot />} fullWidth={profile.locationFullWidth} theme={theme} /> : null}
-          {profile.instagramEnabled && profile.instagramUrl ? <ProfileLinkButton href={profile.instagramUrl} label="Instagram" icon={<FaInstagram />} fullWidth={profile.instagramFullWidth} theme={theme} /> : null}
-          {profile.ibanEnabled && profile.iban ? <CopyIbanButton iban={profile.iban} theme={theme} /> : null}
+          {buttonOrder.map(renderButton)}
         </section>
 
         {profile.facilities.length > 0 ? (
