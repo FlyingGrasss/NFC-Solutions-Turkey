@@ -1,4 +1,5 @@
 import { AdminNav } from "@/components/admin-nav";
+import { AdminHeader } from "@/components/admin-header";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { fieldInputClass, fieldLabelClass } from "@/lib/ui";
 
@@ -56,26 +57,10 @@ function StaticProfileSetting({ label, placeholder, checks = true }: { label: st
   );
 }
 
-function AdminHeader() {
-  return (
-    <header className="hidden">
-      <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-lg font-black text-emerald-700">₺</div>
-        <div>
-          <p className="text-sm font-bold tracking-tight text-slate-950">Yönetim</p>
-          <p className="text-xs text-slate-400">Gelir Gider ve profiller</p>
-        </div>
-      </div>
-      <div className="rounded-xl cursor-pointer px-3 py-2 text-sm text-slate-500 transition hover:bg-white hover:text-slate-900 sm:text-base">Çıkış yap</div>
-    </header>
-  );
-}
-
-function AdminShell({ children, overview = false, maxWidth = "max-w-6xl" }: { children: React.ReactNode; overview?: boolean; maxWidth?: string }) {
+function AdminShell({ children, maxWidth = "max-w-6xl" }: { children: React.ReactNode; maxWidth?: string }) {
   return (
     <main className="min-h-screen bg-[#f4f7f5] px-4 py-5 sm:px-6 sm:py-8" aria-busy="true">
       <div className={`mx-auto ${maxWidth}`}>
-        {overview ? <AdminHeader /> : null}
         {children}
       </div>
     </main>
@@ -188,15 +173,11 @@ function GoogleReviewAdminLoading() {
 
 export function AdminLoading() {
   return (
-    <AdminShell overview>
-      <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">Yönetim</p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Gelir Gider</h1>
-          <p className="mt-2 text-sm text-slate-500">Gelir, gider ve takiplerini tek yerde yönet.</p>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2"><AdminLogoutButton /><p className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm"><DataPlaceholder className="h-3 w-5 align-middle" /> kayıt</p></div>
-      </header>
+    <AdminShell>
+      <AdminHeader eyebrow="Yönetim" title="Gelir Gider" description="Gelir, gider ve takiplerini tek yerde yönet.">
+        <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+        <p className="order-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm sm:order-1"><DataPlaceholder className="h-3 w-5 align-middle" /> kayıt</p>
+      </AdminHeader>
       <AdminNav active="overview" />
       <section className="hidden">
         <div>
@@ -237,7 +218,9 @@ export function AdminLoading() {
 export function LeadsLoading() {
   return (
     <AdminShell>
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">Takip listesi</p><h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Takipler</h1><p className="mt-2 text-sm text-slate-500">Mesaj, arama, mail ve siparişleri tek yerde takip et.</p></div><div className="flex flex-wrap items-center justify-end gap-2"><AdminLogoutButton /></div></header>
+      <AdminHeader eyebrow="Takip listesi" title="Takipler" description="Mesaj, arama, mail ve siparişleri tek yerde takip et.">
+        <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+      </AdminHeader>
       <AdminNav active="leads" />
       <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]"><section className={`${panelClass} h-fit`}><SectionHeading eyebrow="Takip listesi" title="Yeni takip" description="Bir kişiyi, iletişim bilgisini, takip tarihini ve notlarını kaydet." /><LeadFormLoading /></section><section className={panelClass}><SectionHeading eyebrow="Takip listesi" title="Kayıtlı takipler" right={<span className="text-xs font-medium text-slate-400">En yeni 100</span>} />{[0, 1, 2, 3].map((index) => <div key={index} className="border-b border-slate-100 py-4 last:border-0"><DataPlaceholder className="h-4 w-2/5" /><div className="mt-3"><DataPlaceholder className="h-3 w-4/5" /></div><div className="mt-3"><DataPlaceholder className="h-3 w-1/2" /></div></div>)}</section></section>
     </AdminShell>
@@ -247,7 +230,10 @@ export function LeadsLoading() {
 export function ProfilesLoading() {
   return (
     <AdminShell>
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">Yönetim</p><h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Profil kartları</h1><p className="mt-2 text-sm text-slate-500">Kişisel link kartlarını buradan oluştur ve yönet.</p></div><div className="flex flex-wrap items-center justify-end gap-2"><AdminLogoutButton /><StaticButton>+ Yeni profil</StaticButton></div></header>
+      <AdminHeader eyebrow="Yönetim" title="Profil kartları" description="Kişisel link kartlarını buradan oluştur ve yönet.">
+        <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+        <div className="order-2 sm:order-1"><StaticButton>+ Yeni profil</StaticButton></div>
+      </AdminHeader>
       <AdminNav active="profiles" />
       <section className="mt-6 grid gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((index) => <article key={index} className={panelClass}><div className="flex items-start justify-between gap-4"><div><p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">/<DataPlaceholder className="h-3 w-20 align-middle" /></p><h2 className="mt-1 text-xl font-black text-slate-950"><DataPlaceholder className="h-6 w-36" /></h2><p className="mt-1 text-sm text-slate-500"><DataPlaceholder className="h-4 w-28" /></p><p className="mt-3 text-xs text-slate-400"><DataPlaceholder className="h-3 w-5 align-middle" /> bağlantı</p></div><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Aktif</span></div><div className="mt-6 flex flex-wrap gap-3"><StaticButton variant="cardPrimary">Düzenle</StaticButton><StaticButton variant="cardOutline">Herkese açık sayfa ↗</StaticButton><StaticButton variant="cardOutline">Profil yönetimi ↗</StaticButton></div></article>)}</section>
     </AdminShell>
@@ -257,7 +243,10 @@ export function ProfilesLoading() {
 export function StockLoading() {
   return (
     <AdminShell>
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">Yönetim</p><h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Stok takibi</h1><p className="mt-2 text-sm text-slate-500">Kart stoklarını, giriş-çıkışları ve işlemi yapan kişiyi tek yerde takip et.</p></div><div className="flex flex-wrap items-center justify-end gap-2"><AdminLogoutButton /><div className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm"><DataPlaceholder className="h-3 w-5 align-middle" /> ürün · <DataPlaceholder className="h-3 w-8 align-middle" /> adet</div></div></header>
+      <AdminHeader eyebrow="Yönetim" title="Stok takibi" description="Kart stoklarını, giriş-çıkışları ve işlemi yapan kişiyi tek yerde takip et.">
+        <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+        <div className="order-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm sm:order-1"><DataPlaceholder className="h-3 w-5 align-middle" /> ürün · <DataPlaceholder className="h-3 w-8 align-middle" /> adet</div>
+      </AdminHeader>
       <AdminNav active="stock" />
       <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]"><section className={`${panelClass} h-fit`}><SectionHeading eyebrow="Yeni ürün" title="Stok ürünü ekle" description="Örneğin NFC Google Card ve mevcut adetini ekleyerek başlayabilirsin." /><StockCreationLoading /></section><section className={panelClass}><SectionHeading eyebrow="Ürünler" title="Mevcut stok" right={<span className="text-xs font-medium text-slate-400">+ / − ile güncelle</span>} /><div className="grid gap-4 xl:grid-cols-2">{[0, 1, 2, 3].map((index) => <article key={index} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex items-start gap-2"><h3 className="min-w-0 flex-1 break-words text-base font-black text-slate-900"><DataPlaceholder className="h-5 w-36" /></h3><div className="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-500">Düzenle</div></div><p className="mt-1 text-xs text-slate-400">Son güncelleme: <DataPlaceholder className="h-3 w-24 align-middle" /></p></div><p className="shrink-0 text-3xl font-black tracking-tight text-emerald-700"><DataPlaceholder className="h-9 w-14" /></p></div><p className="mt-1 text-right text-xs font-bold uppercase tracking-[0.12em] text-slate-400">adet</p><StockAdjustmentLoading /></article>)}</div></section></section>
       <section className={`${panelClass} mt-6`}><SectionHeading eyebrow="Denetim kaydı" title="Stok hareketleri" right={<span className="text-xs font-medium text-slate-400">En yeni 100</span>} /><div className="overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm"><thead className="border-b border-slate-100 text-xs font-extrabold uppercase tracking-wide text-slate-400"><tr><th className="pb-3 pr-4">Ürün</th><th className="pb-3 pr-4">Değişim</th><th className="pb-3 pr-4">Başlık</th><th className="pb-3 pr-4">İşlemi yapan</th><th className="pb-3">Tarih</th></tr></thead><tbody>{[0, 1, 2, 3, 4].map((index) => <tr key={index} className="border-b border-slate-100"><td className="py-4 pr-4"><DataPlaceholder className="h-4 w-32" /></td><td className="py-4 pr-4"><DataPlaceholder className="h-4 w-10" /></td><td className="py-4 pr-4"><DataPlaceholder className="h-4 w-40" /></td><td className="py-4 pr-4"><DataPlaceholder className="h-4 w-24" /></td><td className="py-4"><DataPlaceholder className="h-3 w-24" /></td></tr>)}</tbody></table></div></section>

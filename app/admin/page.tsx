@@ -5,6 +5,7 @@ import { ComparisonSection } from "@/components/comparison-section";
 import { DeleteTransactionButton } from "@/components/delete-transaction-button";
 import { EditTransactionModal } from "@/components/edit-transaction-modal";
 import { GoogleReviewAdminTool } from "@/components/google-review-admin-tool";
+import { AdminHeader } from "@/components/admin-header";
 import { TransactionForm } from "@/components/transaction-form";
 import { requireMember, requireSession } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
@@ -97,17 +98,10 @@ export default async function AdminPage() {
   return (
     <main className="min-h-screen bg-[#f4f7f5] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <p className={eyebrowClass}>Yönetim</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Gelir Gider</h1>
-            <p className="mt-2 text-sm text-slate-500">Gelir, gider ve takiplerini tek yerde yönet.</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <AdminLogoutButton />
-            <p className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm">{transactions.length} kayıt</p>
-          </div>
-        </header>
+        <AdminHeader eyebrow="Yönetim" title="Gelir Gider" description="Gelir, gider ve takiplerini tek yerde yönet.">
+          <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+          <p className="order-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm sm:order-1">{transactions.length} kayıt</p>
+        </AdminHeader>
 
         <AdminNav active="overview" />
 

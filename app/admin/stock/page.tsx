@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminHeader } from "@/components/admin-header";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { NewStockItemForm, StockAdjustmentForm, StockNameEditor } from "@/components/stock-item-form";
 import { createStockItemAction } from "@/app/stock-actions";
@@ -41,19 +42,12 @@ export default async function StockPage() {
   return (
     <main className="min-h-screen bg-[#f4f7f5] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className={eyebrowClass}>Yönetim</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Stok takibi</h1>
-            <p className="mt-2 text-sm text-slate-500">Kart stoklarını, giriş-çıkışları ve işlemi yapan kişiyi tek yerde takip et.</p>
+        <AdminHeader eyebrow="Yönetim" title="Stok takibi" description="Kart stoklarını, giriş-çıkışları ve işlemi yapan kişiyi tek yerde takip et.">
+          <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+          <div className="order-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm sm:order-1">
+            {items.length} ürün · {totalQuantity} adet
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <AdminLogoutButton />
-            <div className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm">
-              {items.length} ürün · {totalQuantity} adet
-            </div>
-          </div>
-        </header>
+        </AdminHeader>
 
         <AdminNav active="stock" />
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { addLeadAction } from "@/app/lead-actions";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminHeader } from "@/components/admin-header";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { DeleteLeadButton } from "@/components/delete-lead-button";
 import { EditLeadModal } from "@/components/edit-lead-modal";
@@ -39,16 +40,9 @@ export default async function LeadsPage() {
   return (
     <main className="min-h-screen bg-[#f4f7f5] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className={eyebrowClass}>Takip listesi</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Takipler</h1>
-            <p className="mt-2 text-sm text-slate-500">Mesaj, arama, mail ve siparişleri tek yerde takip et.</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <AdminLogoutButton />
-          </div>
-        </header>
+        <AdminHeader eyebrow="Takip listesi" title="Takipler" description="Mesaj, arama, mail ve siparişleri tek yerde takip et.">
+          <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+        </AdminHeader>
 
         <AdminNav active="leads" />
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminHeader } from "@/components/admin-header";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { requireSession } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
@@ -21,17 +22,10 @@ export default async function ProfilesPage() {
   return (
     <main className="min-h-screen bg-[#f4f7f5] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-              <p className={eyebrowClass}>Yönetim</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Profil kartları</h1>
-            <p className="mt-2 text-sm text-slate-500">Kişisel link kartlarını buradan oluştur ve yönet.</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <AdminLogoutButton />
-            <Link href="/admin/profiles/new" className="rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-700">+ Yeni profil</Link>
-          </div>
-        </header>
+        <AdminHeader eyebrow="Yönetim" title="Profil kartları" description="Kişisel link kartlarını buradan oluştur ve yönet.">
+          <div className="order-1 sm:order-2"><AdminLogoutButton /></div>
+          <Link href="/admin/profiles/new" className="order-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-700 sm:order-1">+ Yeni profil</Link>
+        </AdminHeader>
 
         <AdminNav active="profiles" />
 
