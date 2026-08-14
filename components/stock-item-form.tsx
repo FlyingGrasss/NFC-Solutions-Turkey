@@ -1,10 +1,76 @@
 "use client";
 
-import { useActionState } from "react";
-import { adjustStockAction, type StockFormState } from "@/app/stock-actions";
-import { fieldInputClass, fieldLabelClass } from "@/lib/ui";
+import { useActionState, useState } from "react";
+import { adjustStockAction, renameStockItemAction, type StockFormState } from "@/app/stock-actions";
+import { fieldInputClass, fieldLabelClass, modalBackdropClass, modalCardClass } from "@/lib/ui";
 
 const initialState: StockFormState = {};
+
+export function StockNameEditor({
+  itemId,
+  initialName,
+}: {
+  itemId: string;
+  initialName: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(initialName);
+  const [state, formAction, pending] = useActionState(async (previousState: StockFormState, formData: FormData) => {
+    const result = await renameStockItemAction(previousState, formData);
+
+    if (result.success) {
+      setOpen(false);
+    }
+
+    return result;
+  }, initialState);
+
+  function openEditor() {
+    setName(initialName);
+    setOpen(true);
+  }
+
+  return (
+    <>
+      <div className="flex items-start gap-2">
+        <h3 className="min-w-0 flex-1 break-words text-base font-black text-slate-900">{initialName}</h3>
+        <button
+          type="button"
+          onClick={openEditor}
+          className="shrink-0 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-500 transition hover:border-slate-400 hover:bg-white hover:text-slate-800"
+        >
+          Düzenle
+        </button>
+      </div>
+
+      {open ? (
+        <div className={modalBackdropClass} role="presentation">
+          <section className={`${modalCardClass} max-w-md`} role="dialog" aria-modal="true" aria-labelledby={`stock-name-title-${itemId}`}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">Stok ürünü</p>
+                <h2 id={`stock-name-title-${itemId}`} className="mt-1 text-xl font-black text-slate-950">Ürün adını düzenle</h2>
+              </div>
+              <button type="button" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2 text-sm font-bold text-slate-400 transition hover:bg-slate-50 hover:text-slate-700">Kapat</button>
+            </div>
+            <form action={formAction} className="mt-6 space-y-4">
+              <input type="hidden" name="itemId" value={itemId} />
+              <div>
+                <label htmlFor={`stock-name-edit-${itemId}`} className={fieldLabelClass}>Ürün adı</label>
+                <input id={`stock-name-edit-${itemId}`} name="name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={100} className={fieldInputClass} />
+              </div>
+              {state.error ? <p role="alert" className="text-xs font-semibold text-rose-600">{state.error}</p> : null}
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setOpen(false)} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50">İptal</button>
+                <button type="submit" disabled={pending} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-60">{pending ? "Kaydediliyor…" : "Kaydet"}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
+    </>
+  );
+}
 
 export function StockAdjustmentForm({
   itemId,

@@ -45,7 +45,9 @@ export default async function LeadsPage() {
             <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Takipler</h1>
             <p className="mt-2 text-sm text-slate-500">Mesaj, arama, mail ve siparişleri tek yerde takip et.</p>
           </div>
-          <AdminLogoutButton />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <AdminLogoutButton />
+          </div>
         </header>
 
         <AdminNav active="leads" />

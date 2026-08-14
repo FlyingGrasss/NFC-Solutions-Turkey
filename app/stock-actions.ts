@@ -168,3 +168,42 @@ export async function adjustStockAction(
   revalidatePath("/admin/stock");
   return result;
 }
+
+export async function renameStockItemAction(
+  _previousState: StockFormState,
+  formData: FormData,
+): Promise<StockFormState> {
+  const session = await requireSession();
+  const itemId = formData.get("itemId");
+  const nameValue = formData.get("name");
+  const name = typeof nameValue === "string" ? nameValue.trim().slice(0, 100) : "";
+
+  if (typeof itemId !== "string" || !itemId) {
+    return { error: "Stok ürünü bulunamadı." };
+  }
+
+  if (!name) {
+    return { error: "Ürün adı zorunludur." };
+  }
+
+  try {
+    const result = await prisma.stockItem.updateMany({
+      where: { id: itemId, userId: session.user.id },
+      data: { name },
+    });
+
+    if (result.count !== 1) {
+      return { error: "Stok ürünü bulunamadı." };
+    }
+  } catch (error) {
+    console.error("[renameStockItemAction] Stock item rename failed", error);
+    return {
+      error: isUniqueConstraintError(error)
+        ? "Bu ürün zaten stok listesinde var."
+        : "Stok ürünü yeniden adlandırılamadı.",
+    };
+  }
+
+  revalidatePath("/admin/stock");
+  return { success: "Ürün adı güncellendi." };
+}

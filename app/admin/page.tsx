@@ -4,6 +4,7 @@ import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { ComparisonSection } from "@/components/comparison-section";
 import { DeleteTransactionButton } from "@/components/delete-transaction-button";
 import { EditTransactionModal } from "@/components/edit-transaction-modal";
+import { GoogleReviewAdminTool } from "@/components/google-review-admin-tool";
 import { TransactionForm } from "@/components/transaction-form";
 import { requireMember, requireSession } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
@@ -102,13 +103,17 @@ export default async function AdminPage() {
             <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Gelir Gider</h1>
             <p className="mt-2 text-sm text-slate-500">Gelir, gider ve takiplerini tek yerde yönet.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <p className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm">{transactions.length} kayıt</p>
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <AdminLogoutButton />
+            <p className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm">{transactions.length} kayıt</p>
           </div>
         </header>
 
         <AdminNav active="overview" />
+
+        <section className={`${panelClass} mt-6`}>
+          <GoogleReviewAdminTool />
+        </section>
 
         <section className="mb-8 mt-6 grid gap-4 sm:grid-cols-3">
           <div className="min-h-42 rounded-3xl border border-slate-900 bg-slate-900 p-5 text-white shadow-[0_12px_38px_rgb(25_55_36_/_0.08)]">
