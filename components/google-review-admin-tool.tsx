@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { generateGoogleReviewLinkAction } from "@/app/google-review-actions";
+import { QrCodeGenerator } from "@/components/qr-code-generator";
 import { eyebrowClass, fieldInputClass, fieldLabelClass } from "@/lib/ui";
 
 export function GoogleReviewAdminTool() {
-  const [mapsUrl, setMapsUrl] = useState("");
+  const [input, setInput] = useState("");
   const [reviewUrl, setReviewUrl] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,7 @@ export function GoogleReviewAdminTool() {
 
     try {
       const formData = new FormData();
-      formData.set("mapsUrl", mapsUrl);
+      formData.set("mapsUrl", input);
       const result = await generateGoogleReviewLinkAction(formData);
 
       if (result.error) {
@@ -27,8 +28,8 @@ export function GoogleReviewAdminTool() {
         setReviewUrl(result.reviewUrl);
         setMessage(
           result.placeName
-            ? `${result.placeName} için yorum bağlantısı hazır.`
-            : "Yorum bağlantısı hazır.",
+            ? `${result.placeName} için doğrudan Google yorum bağlantısı hazır.`
+            : "Doğrudan Google yorum bağlantısı hazır.",
         );
       }
     } catch {
@@ -59,21 +60,21 @@ export function GoogleReviewAdminTool() {
           Yorum bağlantısı oluştur
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-          Google Maps işletme bağlantısını yapıştırın; yorum bağlantısını oluşturup kopyalayın.
+          Google Maps bağlantısını yapıştırın. Kısa veya uzun Maps bağlantısı otomatik olarak Maps uygulamasını açmayan doğrudan yorum bağlantısına çevrilir.
         </p>
       </div>
 
       <div>
         <label htmlFor="google-review-maps-url" className={fieldLabelClass}>
-          Google Maps bağlantısı
+          Google Maps bağlantısı veya Place ID
         </label>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
             id="google-review-maps-url"
-            type="url"
-            value={mapsUrl}
-            onChange={(event) => setMapsUrl(event.target.value)}
-            placeholder="https://maps.app.goo.gl/..."
+            type="text"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="https://maps.app.goo.gl/... veya ChIJ..."
             className={fieldInputClass}
           />
           <button
@@ -89,7 +90,7 @@ export function GoogleReviewAdminTool() {
 
       <div className="mt-4">
         <label htmlFor="google-review-url" className={fieldLabelClass}>
-          Oluşturulan yorum bağlantısı
+          Oluşturulan doğrudan yorum bağlantısı
         </label>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
@@ -97,7 +98,7 @@ export function GoogleReviewAdminTool() {
             type="url"
             value={reviewUrl}
             onChange={(event) => setReviewUrl(event.target.value)}
-            placeholder="Bağlantı burada görünür"
+            placeholder="search.google.com/local/writereview?..."
             className={fieldInputClass}
           />
           <button
@@ -113,6 +114,8 @@ export function GoogleReviewAdminTool() {
 
       {message ? <p className="mt-3 text-xs font-semibold text-emerald-700">{message}</p> : null}
       {error ? <p role="alert" className="mt-3 text-xs font-semibold text-rose-600">{error}</p> : null}
+
+      <QrCodeGenerator key={reviewUrl || "empty-review-url"} initialValue={reviewUrl} />
     </div>
   );
 }

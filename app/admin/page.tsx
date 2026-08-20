@@ -6,6 +6,7 @@ import { DeleteTransactionButton } from "@/components/delete-transaction-button"
 import { EditTransactionModal } from "@/components/edit-transaction-modal";
 import { GoogleReviewAdminTool } from "@/components/google-review-admin-tool";
 import { AdminHeader } from "@/components/admin-header";
+import { SplitAllTransactionsButton } from "@/components/split-all-transactions-button";
 import { TransactionForm } from "@/components/transaction-form";
 import { requireMember, requireSession } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
@@ -131,6 +132,7 @@ export default async function AdminPage() {
           rows={comparisonRows}
           totalSpentCents={expense}
           totalReceivedCents={income}
+          action={<SplitAllTransactionsButton transactionCount={allTransactions.length} />}
         />
 
         <section className={`${panelClass} mb-8 mt-6`}>

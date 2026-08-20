@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+import { emptyStateClass, eyebrowClass, panelClass } from "@/lib/ui";
+
 type ComparisonRow = {
   name: string;
   spentCents: number;
@@ -5,8 +8,6 @@ type ComparisonRow = {
   netCents: number;
   settlementCents: number;
 };
-
-import { emptyStateClass, eyebrowClass, panelClass } from "@/lib/ui";
 
 const currency = new Intl.NumberFormat("tr-TR", {
   style: "currency",
@@ -21,19 +22,24 @@ export function ComparisonSection({
   rows,
   totalSpentCents,
   totalReceivedCents,
+  action,
 }: {
   rows: ComparisonRow[];
   totalSpentCents: number;
   totalReceivedCents: number;
+  action?: ReactNode;
 }) {
   return (
     <section className={`${panelClass} mt-6`}>
-      <div className="mb-5">
-        <p className={eyebrowClass}>Karşılaştırma</p>
-        <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">Kim ne kadar aldı, kim ne kadar harcadı?</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          “Bölüşüldü” kayıtları üyeler arasında eşit paylaştırılır. Eşitlik hesabı, alınan para eksi harcanan para üzerinden yapılır.
-        </p>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className={eyebrowClass}>Karşılaştırma</p>
+          <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">Kim ne kadar aldı, kim ne kadar harcadı?</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            “Bölüşüldü” kayıtları üyeler arasında eşit paylaşılır. Eşitlik hesabı, alınan para eksi harcanan para üzerinden yapılır.
+          </p>
+        </div>
+        {action}
       </div>
 
       {rows.length === 0 ? (

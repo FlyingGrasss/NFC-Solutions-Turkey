@@ -307,6 +307,21 @@ export async function deleteTransactionAction(formData: FormData) {
   revalidatePath("/admin");
 }
 
+export async function splitAllTransactionsAction(): Promise<FormState> {
+  const session = await requireSession();
+  await requireMember();
+
+  const result = await prisma.transaction.updateMany({
+    where: { userId: session.user.id },
+    data: { paidByMemberId: null },
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: `${result.count} kayıt Bölüşüldü olarak işaretlendi.` };
+}
+
 export async function signOutAction() {
   await auth.api.signOut({
     headers: await headers(),
