@@ -10,9 +10,11 @@ import {
   FaMobileScreenButton,
   FaNfcSymbol,
   FaStar,
+  FaUtensils,
 } from "react-icons/fa6";
 import { BrandLogo } from "@/components/brand-logo";
 import { ProductFlipCard } from "@/components/product-flip-card";
+import { ReferencesCarousel } from "@/components/references-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import { absoluteUrl } from "@/lib/site";
 
@@ -74,6 +76,7 @@ export default function Home() {
         </Link>
         <div className="hidden items-center gap-8 md:flex">
           <a href="#urunler" className="text-xs font-bold text-[#e1f1e4]/65 transition hover:text-[#f4f8f2]">Ürünler</a>
+          <a href="#referanslar" className="text-xs font-bold text-[#e1f1e4]/65 transition hover:text-[#f4f8f2]">Referanslar</a>
           <a href="#cozumler" className="text-xs font-bold text-[#e1f1e4]/65 transition hover:text-[#f4f8f2]">Çözümler</a>
           <Link href="/nasil-calisir" className="text-xs font-bold text-[#e1f1e4]/65 transition hover:text-[#f4f8f2]">Nasıl çalışır?</Link>
           <a href="#iletisim" className="inline-flex items-center gap-2 rounded-full border border-[#b4efc6]/20 px-4 py-2.5 text-xs font-bold text-[#c8f5d6] transition hover:border-[#b4efc6]/45 hover:bg-[#92e5ab]/10">
@@ -132,6 +135,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ReferencesCarousel />
 
       <section id="urunler" className={`${container} scroll-mt-8 pb-32 pt-12`}>
         <div className={`${sectionHeading} mb-12`}>
@@ -205,6 +210,7 @@ export default function Home() {
             { number: "03", icon: <FaChartLine />, title: "İşletme deneyimi", description: "Ekibiniz, şubeleriniz ve ürünleriniz için her temas noktasını ölçülebilir bir bağlantıya dönüştürün.", href: "#iletisim", linkLabel: "Çözümü konuşalım", external: false },
             { number: "04", icon: <FaStar />, title: "Değerlendirme kartları", description: "Google, Tripadvisor, Hotels.com, Booking.com ve DoktorTakvimi için geri bildirim toplamayı kolaylaştırın.", href: "#degerlendirme-kartlari", linkLabel: "Kartları inceleyin", external: false },
             { number: "05", icon: <FaAddressBook />, title: "İletişim kartları", description: "Instagram, WhatsApp ve diğer iletişim bilgilerinizi tek bir dokunuşla erişilebilir hale getirin.", href: "#iletisim-kartlari", linkLabel: "Instagram ve WhatsApp kartlarını inceleyin", external: false },
+            { number: "06", icon: <FaUtensils />, title: "Dijital menü", description: "Menünüzü hızlıca güncelleyebileceğiniz, müşterilerinizin tek dokunuşla açabileceği dijital bir deneyime dönüştürün.", href: "#iletisim", linkLabel: "Dijital menüyü konuşalım", external: false },
           ].map((solution, index) => (
             <article key={solution.number} className={`min-h-72 rounded-[1.75rem] border p-8 transition hover:-translate-y-1 ${index === 0 ? "border-[#8ce0ac]/35 bg-[#123b29]/70" : "border-[#d2f4d8]/13 bg-[#0c271a]/55 hover:border-[#a6edb7]/35"}`}>
               <div className="flex items-start justify-between gap-4">
