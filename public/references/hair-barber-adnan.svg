@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-labelledby="title">
+  <title>Hair Barber Adnan</title>
+  <rect width="320" height="180" rx="26" fill="#161b1a"/>
+  <path d="M44 128c6-43 24-70 49-70s43 27 49 70" fill="none" stroke="#8ce0ac" stroke-width="5"/>
+  <text x="71" y="106" fill="#f4fff6" font-family="Arial, sans-serif" font-size="29" font-weight="800" text-anchor="middle">HBA</text>
+  <text x="158" y="86" fill="#8ce0ac" font-family="Arial, sans-serif" font-size="18" font-weight="700">Hair Barber</text>
+  <text x="158" y="113" fill="#f4fff6" font-family="Arial, sans-serif" font-size="22" font-weight="800">Adnan</text>
+</svg>

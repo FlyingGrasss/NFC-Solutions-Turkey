@@ -102,8 +102,16 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     title: profile.title ? `${profile.name} | ${profile.title}` : profile.name,
     description,
     alternates: { canonical: url },
-    openGraph: { type: "website", url, title: profile.name, description, images: [{ url: profileImage, width: 512, height: 512, alt: profile.name }] },
-    twitter: { card: "summary", title: profile.name, description, images: [profileImage] },
+    openGraph: {
+      type: "website",
+      url,
+      siteName: "NFC Solutions Turkey",
+      locale: "tr_TR",
+      title: profile.name,
+      description,
+      images: [{ url: profileImage, width: 512, height: 512, alt: `${profile.name} dijital kartviziti` }],
+    },
+    twitter: { card: "summary_large_image", title: profile.name, description, images: [profileImage] },
   };
 }
 

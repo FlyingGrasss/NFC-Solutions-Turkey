@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { addTransactionAction, type FormState } from "@/app/actions";
 import { PayerPicker, type MemberOption } from "@/components/payer-picker";
 import { SaleOwnerPicker, type SaleModeValue } from "@/components/sale-owner-picker";
@@ -23,6 +23,8 @@ export function TransactionForm({
   defaultDate,
   action = addTransactionAction,
   onSuccess,
+  onBeforeSubmit,
+  onError,
 }: {
   defaultType: TransactionType;
   members: MemberOption[];
@@ -35,20 +37,36 @@ export function TransactionForm({
   defaultDate?: string;
   action?: TransactionAction;
   onSuccess?: () => void;
+  onBeforeSubmit?: (formData: FormData) => string | void;
+  onError?: (optimisticId?: string) => void;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
+  const optimisticIdRef = useRef<string | undefined>(undefined);
   const [type, setType] = useState<TransactionType>(defaultType);
   const [paidByMemberId, setPaidByMemberId] = useState<string | null>(defaultPaidByMemberId ?? currentMemberId ?? null);
   const [saleMode, setSaleMode] = useState<SaleModeValue>(defaultSaleMode);
   const [soldByMemberId, setSoldByMemberId] = useState<string | null>(defaultSoldByMemberId ?? currentMemberId ?? null);
   const [date] = useState(defaultDate ?? new Date().toISOString().slice(0, 10));
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
 
   useEffect(() => {
-    if (state.success) onSuccess?.();
-  }, [onSuccess, state.success]);
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+  }, [onError, onSuccess]);
+
+  useEffect(() => {
+    if (state.success) onSuccessRef.current?.();
+  }, [state.success]);
+  useEffect(() => {
+    if (state.error) onErrorRef.current?.(optimisticIdRef.current);
+  }, [state.error]);
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} onSubmit={(event) => {
+      const optimisticId = onBeforeSubmit?.(new FormData(event.currentTarget));
+      optimisticIdRef.current = typeof optimisticId === "string" ? optimisticId : undefined;
+    }} className="space-y-4">
       <input type="hidden" name="type" value={type} />
       <input type="hidden" name="paidByMemberId" value={paidByMemberId ?? "SPLIT"} />
       <input type="hidden" name="saleMode" value={type === "INCOME" ? saleMode : "UNASSIGNED"} />

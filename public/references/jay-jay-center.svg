@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-labelledby="title">
+  <title>Jay Jay Center</title>
+  <rect width="320" height="180" rx="26" fill="#fff3d9"/>
+  <circle cx="73" cy="90" r="43" fill="#f08c46"/>
+  <text x="73" y="101" fill="#fffaf0" font-family="Arial, sans-serif" font-size="33" font-weight="800" text-anchor="middle">JJ</text>
+  <text x="137" y="86" fill="#57321e" font-family="Arial, sans-serif" font-size="23" font-weight="800">Jay Jay</text>
+  <text x="137" y="113" fill="#57321e" font-family="Arial, sans-serif" font-size="17" font-weight="600">Center</text>
+</svg>

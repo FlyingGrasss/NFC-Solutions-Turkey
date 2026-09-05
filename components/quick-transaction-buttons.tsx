@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { addTransactionAction } from "@/app/actions";
 import { TransactionForm } from "@/components/transaction-form";
 import type { MemberOption } from "@/components/payer-picker";
@@ -10,12 +11,17 @@ export function QuickTransactionButtons({
   members,
   currentMemberId,
   defaultDate,
+  onBeforeSubmit,
+  onActionError,
 }: {
   members: MemberOption[];
   currentMemberId: string;
   defaultDate: string;
+  onBeforeSubmit?: (formData: FormData) => string | void;
+  onActionError?: (optimisticId?: string) => void;
 }) {
   const [type, setType] = useState<"INCOME" | "EXPENSE" | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!type) return;
@@ -38,8 +44,8 @@ export function QuickTransactionButtons({
         <button type="button" onClick={() => setType("EXPENSE")} className="rounded-xl bg-rose-600 px-3 py-2.5 text-xs font-black text-white transition hover:bg-rose-700">− Gider</button>
       </div>
       {type ? (
-        <div className={`${modalBackdropClass} items-end sm:items-center`} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setType(null); }}>
-          <div className={`${modalCardClass} max-h-[calc(100vh-1rem)] max-w-lg sm:max-h-[calc(100vh-2rem)]`} role="dialog" aria-modal="true" aria-labelledby="quick-transaction-title">
+        <div className={`${modalBackdropClass} items-end p-2 sm:items-center sm:p-4`} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setType(null); }}>
+          <div className={`${modalCardClass} max-h-[calc(100dvh-1rem)] max-w-lg rounded-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:max-h-[calc(100dvh-2rem)] sm:rounded-3xl sm:p-6 sm:pb-6`} role="dialog" aria-modal="true" aria-labelledby="quick-transaction-title">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">Hızlı kayıt</p>
@@ -55,7 +61,9 @@ export function QuickTransactionButtons({
               defaultSoldByMemberId={currentMemberId}
               defaultDate={defaultDate}
               action={addTransactionAction}
-              onSuccess={() => setType(null)}
+              onBeforeSubmit={onBeforeSubmit}
+              onError={onActionError}
+              onSuccess={() => { setType(null); router.refresh(); }}
             />
           </div>
         </div>

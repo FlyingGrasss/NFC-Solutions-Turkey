@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createSettlementAction, type FormState } from "@/app/actions";
 import { eyebrowClass, modalBackdropClass, modalCardClass } from "@/lib/ui";
 
@@ -17,6 +18,12 @@ export type SettlementSuggestion = {
 export function SettlementButton({ suggestion }: { suggestion: SettlementSuggestion | null }) {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState<FormState, FormData>(createSettlementAction, {});
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!state.success) return;
+    router.refresh();
+  }, [router, state.success]);
 
   if (!suggestion) {
     return <span className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-400">Eşit durumdasınız</span>;

@@ -18,6 +18,11 @@ const circularReferenceImages = new Set([
   "/references/petstylistt.jpg",
   "/references/kayhan-kaya.jpg",
   "/references/mehmet-aktas.jpg",
+  "/references/bursa-bey-tursulari.jpg",
+  "/references/hursit-kuafor.jpg",
+  "/references/rezan-pekdogan.jpg",
+  "/references/onail-bodrum.webp",
+  "/references/merve-beauty.png",
 ]);
 
 const references: Reference[] = [
@@ -38,6 +43,25 @@ const references: Reference[] = [
   { name: "YU Bake House", href: "https://www.instagram.com/yubakehouse/", image: "/references/yu-bake-house.jpg" },
   { name: "Derin Restorant Beach & Bar", href: "https://www.derinrestorant.com.tr/", image: "/references/derin-restorant.png", imageClassName: "max-h-16" },
   { name: "Berk Balık Bodrum", href: "https://www.instagram.com/berkbalikbodrum/", image: "/references/berk-balik.jpg" },
+  { name: "Artemis Restaurant Bodrum", href: "https://www.artemisyemek.com/", image: "/references/artemis-restaurant.png", imageClassName: "max-h-20 rounded-xl bg-white p-2" },
+  { name: "Nokta Sebzeli Döner Bodrum", href: "https://www.instagram.com/noktasebzelibodrumdoneri/", image: "/references/nokta-sebzeli-doner.jpg" },
+  { name: "Bursa Bey Turşuları", href: "https://www.instagram.com/bursabeytursulari/", image: "/references/bursa-bey-tursulari.jpg" },
+  { name: "Hurşit Kuaför", href: "https://www.instagram.com/hursit.kuafor/", image: "/references/hursit-kuafor.jpg" },
+  { name: "Rezan Pekdoğan Art & Beauty", href: "https://www.instagram.com/rezanpekdoganartandbeauty/", image: "/references/rezan-pekdogan.jpg" },
+  { name: "Uzm. Fzt. Bahriye Dağ", href: "https://www.google.com/maps/search/?api=1&query=Uzm.Fzt.+Bahriye+Da%C4%9F", image: "/references/bahriye-dag.svg", imageClassName: "max-h-16" },
+  { name: "İkon Restaurant Yalıkavak", href: "https://www.happygroup.com.tr/subelerimiz/ikon/ikon-yalikavak-marina", image: "/references/ikon-yalikavak.webp", imageClassName: "max-h-20 rounded-xl" },
+  { name: "Raha Bodrum", href: "https://rahabodrum.com/", image: "/references/raha-bodrum.jpg", imageClassName: "max-h-20 rounded-xl" },
+  { name: "Hair Barber Adnan", href: "https://www.google.com/maps/search/?api=1&query=Hair+Barber+Adnan+Yal%C4%B1kavak", image: "/references/hair-barber-adnan.svg", imageClassName: "max-h-16" },
+  { name: "Sofi's Marina Brasserie", href: "https://sofismarinabrasserie.com/", image: "/references/sofis-marina.png", imageClassName: "max-h-16" },
+  { name: "O'Nail Tırnak & Estetik Center", href: "https://onail.com.tr/", image: "/references/onail-bodrum.webp", imageClassName: "max-h-16" },
+  { name: "Linam Restaurant", href: "https://linamrestaurant.com/", image: "/references/linam-restaurant.png", imageClassName: "max-h-16" },
+  { name: "Mösyö Bodrum", href: "https://www.instagram.com/mosyobodrum/", image: "/references/mosyo-bodrum.jpg", imageClassName: "max-h-20 rounded-xl" },
+  { name: "Industry Burger", href: "https://industryburger.com.tr/menu", image: "/references/industry-burger.png", imageClassName: "max-h-16 rounded-xl bg-slate-950 p-2" },
+  { name: "Kuaför Murat Ekinlioğlu", href: "https://www.google.com/maps/search/?api=1&query=Kuaf%C3%B6r+Murat+Ekinlio%C4%9Flu+Bodrum", image: "/references/murat-ekinlioglu.svg", imageClassName: "max-h-16" },
+  { name: "Merve Beauty", href: "https://mervebeauty.com/en", image: "/references/merve-beauty.png", imageClassName: "max-h-16" },
+  { name: "Yalı Çapkını", href: "https://yalicapkini.com/", image: "/references/yali-capkini.jpg", imageClassName: "max-h-20 rounded-xl" },
+  { name: "The Garden Restaurant Bar", href: "https://thegardenrest.eatbu.com/?lang=tr", image: "/references/the-garden-bodrum.jpg", imageClassName: "max-h-20 rounded-xl" },
+  { name: "Jay Jay Center", href: "https://www.google.com/maps/search/?api=1&query=Jay+Jay+Center+Bodrum", image: "/references/jay-jay-center.svg", imageClassName: "max-h-16" },
 ];
 
 function ReferenceItem({ reference, onHoverStart, onHoverEnd }: { reference: Reference; onHoverStart: () => void; onHoverEnd: () => void }) {
