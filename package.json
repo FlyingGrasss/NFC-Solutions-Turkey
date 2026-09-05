@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:finance": "tsx --test lib/finance.test.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev"
   },

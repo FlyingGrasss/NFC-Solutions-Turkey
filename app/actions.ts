@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { getPartnerMembers, getSettlementSuggestion } from "@/lib/finance";
 import {
   MEMBER_COOKIE,
   requireMember,
@@ -66,7 +67,7 @@ export async function signInAction(
             },
             headers: requestHeaders,
           });
-        } catch (_signInError) {
+        } catch {
           // Password changed in APP_PASSWORD: clear stale user & recreate with new password
           await prisma.user.delete({
             where: { id: existingUser.id },
@@ -118,6 +119,11 @@ export async function signInAction(
 
 type PayerValidation = { id: string | null } | { error: string };
 
+type SaleValidation = {
+  mode: "UNASSIGNED" | "SOLO" | "JOINT";
+  soldByMemberId: string | null;
+} | { error: string };
+
 async function parsePaidByMemberId(value: FormDataEntryValue | null): Promise<PayerValidation> {
   if (value === null || value === "SPLIT") {
     return { id: null };
@@ -133,6 +139,50 @@ async function parsePaidByMemberId(value: FormDataEntryValue | null): Promise<Pa
   });
 
   return member ? { id: member.id } : { error: "Ödeyen seçimi geçersiz." };
+}
+
+async function parseSaleFields(
+  type: FormDataEntryValue | null,
+  saleModeValue: FormDataEntryValue | null,
+  soldByMemberValue: FormDataEntryValue | null,
+): Promise<SaleValidation> {
+  if (type !== "INCOME") return { mode: "UNASSIGNED", soldByMemberId: null };
+
+  const saleMode = saleModeValue === "SOLO" || saleModeValue === "JOINT"
+    ? saleModeValue
+    : saleModeValue === "UNASSIGNED" || saleModeValue === null
+      ? "UNASSIGNED"
+      : null;
+
+  if (!saleMode) return { error: "Satış biçimi geçersiz." };
+  if (saleMode === "JOINT" || saleMode === "UNASSIGNED") {
+    return { mode: saleMode, soldByMemberId: null };
+  }
+
+  if (typeof soldByMemberValue !== "string" || !soldByMemberValue) {
+    return { error: "Satışı yapan kişiyi seçin." };
+  }
+
+  const member = await prisma.member.findUnique({
+    where: { id: soldByMemberValue },
+    select: { id: true },
+  });
+
+  return member
+    ? { mode: "SOLO", soldByMemberId: member.id }
+    : { error: "Satışı yapan kişi geçersiz." };
+}
+
+async function parseLeadId(value: FormDataEntryValue | null, userId: string) {
+  if (value === null || value === "") return { id: null } as const;
+  if (typeof value !== "string") return { error: "İşletme bağlantısı geçersiz." } as const;
+
+  const lead = await prisma.lead.findFirst({
+    where: { id: value, userId },
+    select: { id: true },
+  });
+
+  return lead ? { id: lead.id } as const : { error: "İşletme bağlantısı geçersiz." } as const;
 }
 
 function parseAmount(value: string) {
@@ -159,10 +209,14 @@ export async function addTransactionAction(
   const descriptionValue = formData.get("description");
   const dateValue = formData.get("date");
   const paidByMember = await parsePaidByMemberId(formData.get("paidByMemberId"));
+  const sale = await parseSaleFields(type, formData.get("saleMode"), formData.get("soldByMemberId"));
+  const lead = await parseLeadId(formData.get("leadId"), session.user.id);
 
   if ("error" in paidByMember) {
     return { error: paidByMember.error };
   }
+  if ("error" in sale) return { error: sale.error };
+  if ("error" in lead) return { error: lead.error };
 
   if (type !== "INCOME" && type !== "EXPENSE") {
     return { error: "Kayıt türünü seçin." };
@@ -201,6 +255,9 @@ export async function addTransactionAction(
       date,
       createdByName: member.name,
       paidByMemberId: paidByMember.id,
+      saleMode: sale.mode,
+      soldByMemberId: sale.soldByMemberId,
+      leadId: lead.id,
       userId: session.user.id,
     },
   });
@@ -222,10 +279,14 @@ export async function updateTransactionAction(
   const descriptionValue = formData.get("description");
   const dateValue = formData.get("date");
   const paidByMember = await parsePaidByMemberId(formData.get("paidByMemberId"));
+  const sale = await parseSaleFields(type, formData.get("saleMode"), formData.get("soldByMemberId"));
+  const lead = await parseLeadId(formData.get("leadId"), session.user.id);
 
   if ("error" in paidByMember) {
     return { error: paidByMember.error };
   }
+  if ("error" in sale) return { error: sale.error };
+  if ("error" in lead) return { error: lead.error };
 
   if (typeof id !== "string" || !id) {
     return { error: "Düzenlenecek kayıt bulunamadı." };
@@ -280,6 +341,9 @@ export async function updateTransactionAction(
       description,
       date,
       paidByMemberId: paidByMember.id,
+      saleMode: sale.mode,
+      soldByMemberId: sale.soldByMemberId,
+      leadId: lead.id,
     },
   });
 
@@ -307,19 +371,55 @@ export async function deleteTransactionAction(formData: FormData) {
   revalidatePath("/admin");
 }
 
-export async function splitAllTransactionsAction(): Promise<FormState> {
+export async function createSettlementAction(
+  _previousState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const session = await requireSession();
-  await requireMember();
-
-  const result = await prisma.transaction.updateMany({
+  const member = await requireMember();
+  const allMembers = await prisma.member.findMany({ select: { id: true, name: true } });
+  const members = getPartnerMembers(allMembers);
+  const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
-    data: { paidByMemberId: null },
+    select: {
+      id: true,
+      type: true,
+      amountCents: true,
+      paidByMemberId: true,
+      saleMode: true,
+      soldByMemberId: true,
+    },
+  });
+  const settlements = await prisma.settlement.findMany({
+    where: { userId: session.user.id },
+    select: { amountCents: true, fromMemberId: true, toMemberId: true },
+  });
+  const suggestion = getSettlementSuggestion(members, transactions, settlements);
+
+  if (!suggestion) return { error: "Şu anda eşit durumdasınız." };
+  if (formData.get("confirm") !== "yes") return { error: "Eşitleme onaylanmadı." };
+
+  const noteValue = formData.get("note");
+  const note = typeof noteValue === "string" && noteValue.trim()
+    ? noteValue.trim().slice(0, 120)
+    : null;
+
+  await prisma.settlement.create({
+    data: {
+      amountCents: suggestion.amountCents,
+      fromMemberId: suggestion.fromMemberId,
+      toMemberId: suggestion.toMemberId,
+      createdByMemberId: member.id,
+      createdByName: member.name,
+      note,
+      userId: session.user.id,
+    },
   });
 
   revalidatePath("/dashboard");
   revalidatePath("/admin");
 
-  return { success: `${result.count} kayıt Bölüşüldü olarak işaretlendi.` };
+  return { success: "Eşitleme kaydedildi." };
 }
 
 export async function signOutAction() {

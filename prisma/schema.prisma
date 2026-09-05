@@ -19,6 +19,8 @@ model User {
   accounts      Account[]
   transactions  Transaction[]
   leads         Lead[]
+  settlements   Settlement[]
+  leadVisits    LeadVisit[]
   stockItems    StockItem[]
   stockChanges  StockChange[]
 
@@ -26,10 +28,16 @@ model User {
 }
 
 model Member {
-  id               String        @id @default(cuid())
-  name             String        @unique
-  createdAt        DateTime      @default(now())
-  paidTransactions Transaction[] @relation("paidBy")
+  id                  String         @id @default(cuid())
+  name                String         @unique
+  createdAt           DateTime       @default(now())
+  paidTransactions    Transaction[]  @relation("paidBy")
+  soldTransactions    Transaction[]  @relation("soldBy")
+  sentSettlements     Settlement[]   @relation("settlementFrom")
+  receivedSettlements Settlement[]   @relation("settlementTo")
+  createdSettlements  Settlement[]   @relation("settlementCreatedBy")
+  createdLeads        Lead[]         @relation("leadCreatedBy")
+  leadVisits          LeadVisit[]
 }
 
 model Profile {
@@ -172,6 +180,31 @@ enum LeadType {
   ORDER
 }
 
+enum SaleMode {
+  UNASSIGNED
+  SOLO
+  JOINT
+}
+
+enum LeadSource {
+  COLD_WALK_IN
+  MESSAGE
+  CALL
+  MAIL
+  OTHER
+}
+
+enum LeadStage {
+  UNCLASSIFIED
+  REFUSED
+  DECISION_MAKER_ABSENT
+  STAFF_LIKED
+  STAFF_EXPECTS_BOSS_INTEREST
+  FOLLOW_UP_REQUESTED
+  ORDER_INTENT
+  ORDER_CONFIRMED
+}
+
 model Transaction {
   id             String          @id @default(cuid())
   type           TransactionType
@@ -181,27 +214,83 @@ model Transaction {
   createdAt      DateTime        @default(now())
   createdByName  String          @default("Bilinmiyor")
   paidByMemberId String?
+  saleMode       SaleMode       @default(UNASSIGNED)
+  soldByMemberId String?
+  leadId         String?
   userId         String
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   paidByMember   Member?         @relation("paidBy", fields: [paidByMemberId], references: [id], onDelete: SetNull)
+  soldByMember   Member?         @relation("soldBy", fields: [soldByMemberId], references: [id], onDelete: SetNull)
+  lead           Lead?           @relation(fields: [leadId], references: [id], onDelete: SetNull)
 
   @@index([userId, date])
   @@index([paidByMemberId])
+  @@index([soldByMemberId])
+  @@index([leadId])
 }
 
 model Lead {
-  id           String   @id @default(cuid())
-  type         LeadType
-  personName   String
-  contactInfo  String?
-  followUpAt   DateTime?
-  details      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String      @id @default(cuid())
+  type              LeadType
+  source            LeadSource  @default(OTHER)
+  stage             LeadStage   @default(UNCLASSIFIED)
+  personName        String
+  contactInfo       String?
+  followUpAt        DateTime?
+  details           String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  userId            String
+  createdByMemberId String?
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdByMember   Member?     @relation("leadCreatedBy", fields: [createdByMemberId], references: [id], onDelete: SetNull)
+  visits            LeadVisit[]
+  transactions      Transaction[]
 
   @@index([userId, followUpAt])
+  @@index([userId, source, stage])
+  @@index([createdByMemberId])
+}
+
+model LeadVisit {
+  id                       String    @id @default(cuid())
+  stage                    LeadStage
+  occurredAt               DateTime  @default(now())
+  spokeToDecisionMaker     Boolean   @default(false)
+  followUpAt               DateTime?
+  contactInfo              String?
+  details                  String?
+  leadId                   String
+  memberId                 String
+  userId                   String
+  lead                     Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  member                   Member    @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  user                     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, occurredAt])
+  @@index([userId, occurredAt])
+  @@index([memberId, occurredAt])
+}
+
+model Settlement {
+  id                String   @id @default(cuid())
+  amountCents       Int
+  date              DateTime @default(now())
+  note              String?
+  createdAt         DateTime @default(now())
+  createdByName     String   @default("Bilinmiyor")
+  fromMemberId      String
+  toMemberId        String
+  createdByMemberId String?
+  userId            String
+  fromMember        Member   @relation("settlementFrom", fields: [fromMemberId], references: [id], onDelete: Restrict)
+  toMember          Member   @relation("settlementTo", fields: [toMemberId], references: [id], onDelete: Restrict)
+  createdByMember   Member?  @relation("settlementCreatedBy", fields: [createdByMemberId], references: [id], onDelete: SetNull)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([fromMemberId, date])
+  @@index([toMemberId, date])
 }
 
 model StockItem {
