@@ -89,7 +89,9 @@ export default function Home() {
         <div className="relative z-10 max-w-xl">
           <p className={kicker}><span className="block h-px w-7 bg-[#75d49a] shadow-[0_0_12px_rgb(117_212_154_/_0.8)]" /> Türkiye için temassız çözümler</p>
           <h1 className="mt-6 max-w-xl text-[clamp(3rem,7vw,6.5rem)] font-extrabold leading-[1.01] tracking-[-0.02em] text-[#f5faf4]">
-            Bir dokunuşla <em className={heroAccentText}>daha fazlasını</em> anlatın.
+            <span className="block whitespace-nowrap">Bir dokunuşla</span>
+            <span className="block whitespace-nowrap"><em className={heroAccentText}>daha fazlasını</em></span>
+            <span className="block whitespace-nowrap">anlatın.</span>
           </h1>
           <p className="mt-6 max-w-lg text-base leading-7 text-[#daeedd]/60">
             Kartvizitinizi, iletişim bilgilerinizi ve markanızın dijital dünyasını tek bir temassız deneyimde birleştirin.

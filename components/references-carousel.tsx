@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
 
 type Reference = {
   name: string;
@@ -21,7 +20,7 @@ const circularReferenceImages = new Set([
   "/references/bursa-bey-tursulari.jpg",
   "/references/hursit-kuafor.jpg",
   "/references/rezan-pekdogan.jpg",
-  "/references/onail-bodrum.webp",
+  "/references/onail-bodrum.jpg",
   "/references/merve-beauty.png",
 ]);
 
@@ -48,30 +47,28 @@ const references: Reference[] = [
   { name: "Bursa Bey Turşuları", href: "https://www.instagram.com/bursabeytursulari/", image: "/references/bursa-bey-tursulari.jpg" },
   { name: "Hurşit Kuaför", href: "https://www.instagram.com/hursit.kuafor/", image: "/references/hursit-kuafor.jpg" },
   { name: "Rezan Pekdoğan Art & Beauty", href: "https://www.instagram.com/rezanpekdoganartandbeauty/", image: "/references/rezan-pekdogan.jpg" },
-  { name: "Uzm. Fzt. Bahriye Dağ", href: "https://www.google.com/maps/search/?api=1&query=Uzm.Fzt.+Bahriye+Da%C4%9F", image: "/references/bahriye-dag.svg", imageClassName: "max-h-16" },
-  { name: "İkon Restaurant Yalıkavak", href: "https://www.happygroup.com.tr/subelerimiz/ikon/ikon-yalikavak-marina", image: "/references/ikon-yalikavak.webp", imageClassName: "max-h-20 rounded-xl" },
-  { name: "Raha Bodrum", href: "https://rahabodrum.com/", image: "/references/raha-bodrum.jpg", imageClassName: "max-h-20 rounded-xl" },
-  { name: "Hair Barber Adnan", href: "https://www.google.com/maps/search/?api=1&query=Hair+Barber+Adnan+Yal%C4%B1kavak", image: "/references/hair-barber-adnan.svg", imageClassName: "max-h-16" },
+    { name: "Uzm. Fzt. Bedriye Dağ", href: "https://www.bedriyedag.com/", image: "/references/bedriye-dag.svg", imageClassName: "max-h-16" },
+  { name: "İkon Restaurant Yalıkavak", href: "https://www.happygroup.com.tr/subelerimiz/ikon/ikon-yalikavak-marina", image: "/references/happy-group.webp", imageClassName: "max-h-20 rounded-xl" },
+  { name: "Raha Bodrum", href: "https://www.instagram.com/rahayalikavak/", image: "/references/raha-bodrum.jpg", imageClassName: "max-h-20 rounded-xl" },
+  { name: "Hair Barber Adnan", href: "https://www.google.com/maps/search/?api=1&query=Hair+Barber+Adnan+Yal%C4%B1kavak", image: "/references/hair-barber-adnan.jpg", imageClassName: "max-h-16 rounded-xl" },
   { name: "Sofi's Marina Brasserie", href: "https://sofismarinabrasserie.com/", image: "/references/sofis-marina.png", imageClassName: "max-h-16" },
-  { name: "O'Nail Tırnak & Estetik Center", href: "https://onail.com.tr/", image: "/references/onail-bodrum.webp", imageClassName: "max-h-16" },
+  { name: "O'Nail Tırnak & Estetik Center", href: "https://www.instagram.com/onailbodrum/", image: "/references/onail-bodrum.jpg", imageClassName: "max-h-16" },
   { name: "Linam Restaurant", href: "https://linamrestaurant.com/", image: "/references/linam-restaurant.png", imageClassName: "max-h-16" },
   { name: "Mösyö Bodrum", href: "https://www.instagram.com/mosyobodrum/", image: "/references/mosyo-bodrum.jpg", imageClassName: "max-h-20 rounded-xl" },
   { name: "Industry Burger", href: "https://industryburger.com.tr/menu", image: "/references/industry-burger.png", imageClassName: "max-h-16 rounded-xl bg-slate-950 p-2" },
-  { name: "Kuaför Murat Ekinlioğlu", href: "https://www.google.com/maps/search/?api=1&query=Kuaf%C3%B6r+Murat+Ekinlio%C4%9Flu+Bodrum", image: "/references/murat-ekinlioglu.svg", imageClassName: "max-h-16" },
-  { name: "Merve Beauty", href: "https://mervebeauty.com/en", image: "/references/merve-beauty.png", imageClassName: "max-h-16" },
-  { name: "Yalı Çapkını", href: "https://yalicapkini.com/", image: "/references/yali-capkini.jpg", imageClassName: "max-h-20 rounded-xl" },
-  { name: "The Garden Restaurant Bar", href: "https://thegardenrest.eatbu.com/?lang=tr", image: "/references/the-garden-bodrum.jpg", imageClassName: "max-h-20 rounded-xl" },
-  { name: "Jay Jay Center", href: "https://www.google.com/maps/search/?api=1&query=Jay+Jay+Center+Bodrum", image: "/references/jay-jay-center.svg", imageClassName: "max-h-16" },
+  { name: "Kuaför Murat Ekinlioğlu", href: "https://www.instagram.com/murathairsalon/", image: "/references/murat-ekinlioglu.jpg", imageClassName: "max-h-16" },
+  { name: "Merve Özkan Beauty Studio", href: "https://www.instagram.com/merveozkanbeautystudio/", image: "/references/merve-beauty.jpg", imageClassName: "max-h-16" },
+  { name: "Yalı Çapkını", href: "https://www.instagram.com/yalicapkini_bodrum/", image: "/references/yali-capkini-instagram.jpg", imageClassName: "max-h-20 rounded-xl" },
+  { name: "The Garden Restaurant Bar", href: "https://www.instagram.com/thegardenbodrum/", image: "/references/the-garden-bodrum-instagram.jpg", imageClassName: "max-h-20 rounded-xl" },
+  { name: "Jay Jay Center", href: "https://www.instagram.com/jay_jay_center/", image: "/references/jay-jay-center.jpg", imageClassName: "max-h-16" },
 ];
 
-function ReferenceItem({ reference, onHoverStart, onHoverEnd }: { reference: Reference; onHoverStart: () => void; onHoverEnd: () => void }) {
+function ReferenceItem({ reference }: { reference: Reference }) {
   return (
     <a
       href={reference.href}
       target="_blank"
       rel="noreferrer"
-      onMouseEnter={onHoverStart}
-      onMouseLeave={onHoverEnd}
       className="group flex w-[9.5rem] shrink-0 self-start snap-start flex-col items-center px-2 py-3 text-center max-[420px]:w-[8.5rem] sm:w-[12rem] sm:py-4"
     >
       <span className="flex h-24 w-full items-center justify-center">
@@ -91,44 +88,32 @@ function ReferenceItem({ reference, onHoverStart, onHoverEnd }: { reference: Ref
   );
 }
 
+function ReferenceMarquee({ rowCount }: { rowCount: 2 | 3 }) {
+  return (
+    <div className="grid gap-3">
+      {Array.from({ length: rowCount }, (_, rowIndex) => {
+        const rowReferences = references.filter((_, index) => index % rowCount === rowIndex);
+        const movesRight = rowIndex % 2 === 1;
+
+        return (
+          <div key={rowIndex} className="overflow-hidden">
+            <div className={`references-marquee-track flex w-max focus-within:[animation-play-state:paused] hover:[animation-play-state:paused] ${movesRight ? "references-marquee-track-reverse" : ""}`}>
+              {[0, 1].map((groupIndex) => (
+                <div key={groupIndex} className="flex shrink-0 gap-3 pr-3" aria-hidden={groupIndex === 1}>
+                  {rowReferences.map((reference, index) => (
+                    <ReferenceItem key={`${rowIndex}-${groupIndex}-${reference.name}-${index}`} reference={reference} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ReferencesCarousel() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef(false);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    const scrollTrack = track;
-
-    let animationFrame = 0;
-    let lastTime = performance.now();
-    let position = scrollTrack.scrollLeft;
-
-    function animate(currentTime: number) {
-      const elapsed = Math.min(currentTime - lastTime, 50);
-      lastTime = currentTime;
-
-      if (!pausedRef.current) {
-        const firstGroup = scrollTrack.firstElementChild as HTMLElement | null;
-        const secondGroup = firstGroup?.nextElementSibling as HTMLElement | null;
-        const loopWidth = firstGroup && secondGroup ? secondGroup.offsetLeft - firstGroup.offsetLeft : 0;
-
-        if (loopWidth > 0) {
-          position += elapsed * 0.045;
-          if (position >= loopWidth) position -= loopWidth;
-          scrollTrack.scrollLeft = position;
-        }
-      } else {
-        position = scrollTrack.scrollLeft;
-      }
-
-      animationFrame = requestAnimationFrame(animate);
-    }
-
-    animationFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrame);
-  }, []);
-
   return (
     <section id="referanslar" className="scroll-mt-8 border-y border-[#d6f6e2]/10 bg-[#0a2019]/60 py-24">
       <div className="mx-auto w-[min(100%-3rem,75rem)]">
@@ -138,31 +123,11 @@ export function ReferencesCarousel() {
           <p className="mt-5 max-w-lg text-sm leading-7 text-[#d5efd9]/55">Farklı sektörlerden işletmeler için NFC kartları ve tek dokunuşluk dijital deneyimler tasarladık.</p>
         </div>
 
-        <div
-          ref={trackRef}
-          onFocusCapture={() => { pausedRef.current = true; }}
-          onBlurCapture={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) pausedRef.current = false;
-          }}
-          className="mt-12 flex gap-3 overflow-x-auto py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          aria-label="Referanslarımız"
-        >
-          {[0, 1].map((groupIndex) => (
-            <div
-              key={groupIndex}
-              className="grid shrink-0 auto-cols-[9.5rem] grid-flow-col grid-rows-2 gap-x-3 gap-y-5 max-[420px]:auto-cols-[8.5rem] sm:flex sm:gap-3"
-              aria-hidden={groupIndex === 1}
-            >
-              {references.map((reference, index) => (
-                <ReferenceItem
-                  key={`${groupIndex}-${reference.name}-${index}`}
-                  reference={reference}
-                  onHoverStart={() => { pausedRef.current = true; }}
-                  onHoverEnd={() => { pausedRef.current = false; }}
-                />
-              ))}
-            </div>
-          ))}
+        <div className="mt-12 hidden overflow-hidden py-8 sm:block" aria-label="Referanslarımız">
+          <ReferenceMarquee rowCount={2} />
+        </div>
+        <div className="mt-12 overflow-hidden py-8 sm:hidden" aria-label="Referanslarımız">
+          <ReferenceMarquee rowCount={3} />
         </div>
       </div>
     </section>
