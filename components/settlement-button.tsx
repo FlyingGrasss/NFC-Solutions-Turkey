@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSettlementAction, type FormState } from "@/app/actions";
+import { useModalScrollLock } from "@/components/use-modal-scroll-lock";
 import { eyebrowClass, modalBackdropClass, modalCardClass } from "@/lib/ui";
 
 const currency = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" });
@@ -19,6 +20,8 @@ export function SettlementButton({ suggestion }: { suggestion: SettlementSuggest
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState<FormState, FormData>(createSettlementAction, {});
   const router = useRouter();
+
+  useModalScrollLock(open);
 
   useEffect(() => {
     if (!state.success) return;

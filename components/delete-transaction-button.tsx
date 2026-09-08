@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { deleteTransactionAction } from "@/app/actions";
+import { useModalScrollLock } from "@/components/use-modal-scroll-lock";
 import { eyebrowClass, modalBackdropClass, modalCardClass } from "@/lib/ui";
 
 export function DeleteTransactionButton({
@@ -12,6 +13,8 @@ export function DeleteTransactionButton({
   description: string;
 }) {
   const [open, setOpen] = useState(false);
+
+  useModalScrollLock(open);
 
   return (
     <>

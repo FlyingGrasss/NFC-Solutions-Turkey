@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { updateTransactionAction, type FormState } from "@/app/actions";
 import { PayerPicker, type MemberOption } from "@/components/payer-picker";
 import { SaleOwnerPicker, type SaleModeValue } from "@/components/sale-owner-picker";
+import { SellerCreditPicker } from "@/components/seller-credit-picker";
 import { fieldInputClass, fieldLabelClass } from "@/lib/ui";
 
 export type EditableTransaction = {
@@ -16,6 +17,7 @@ export type EditableTransaction = {
   saleMode: SaleModeValue;
   soldByMemberId: string | null;
   leadId: string | null;
+  creditedSellerIds: string[];
 };
 
 const initialState: FormState = {};
@@ -34,6 +36,10 @@ export function EditTransactionForm({
   const [paidByMemberId, setPaidByMemberId] = useState<string | null>(transaction.paidByMemberId);
   const [saleMode, setSaleMode] = useState<SaleModeValue>(transaction.saleMode);
   const [soldByMemberId, setSoldByMemberId] = useState<string | null>(transaction.soldByMemberId);
+  const [creditedSellerId, setCreditedSellerId] = useState(transaction.creditedSellerIds[0] ?? "");
+  const [secondSellerId, setSecondSellerId] = useState(transaction.creditedSellerIds[1] ?? "");
+
+  useEffect(() => { if (state.success) onCancel(); }, [onCancel, state.success]);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -42,6 +48,8 @@ export function EditTransactionForm({
       <input type="hidden" name="paidByMemberId" value={paidByMemberId ?? "SPLIT"} />
       <input type="hidden" name="saleMode" value={type === "INCOME" ? saleMode : "UNASSIGNED"} />
       <input type="hidden" name="soldByMemberId" value={type === "INCOME" ? soldByMemberId ?? "" : ""} />
+      <input type="hidden" name="creditedSellerId" value={type === "INCOME" ? creditedSellerId : ""} />
+      <input type="hidden" name="secondSellerId" value={type === "INCOME" ? secondSellerId : ""} />
       <input type="hidden" name="leadId" value={transaction.leadId ?? ""} />
 
       <div>
@@ -58,8 +66,10 @@ export function EditTransactionForm({
 
       {type === "INCOME" ? (
         <div>
-          <span className={fieldLabelClass}>Satışı yapan kişi</span>
+          <span className={fieldLabelClass}>Kâr paylaşımı</span>
           <SaleOwnerPicker members={members} mode={saleMode} soldByMemberId={soldByMemberId} onModeChange={setSaleMode} onSoldByChange={setSoldByMemberId} />
+          <span className={`${fieldLabelClass} mt-4`}>Satış kredisi</span>
+          <SellerCreditPicker members={members} primaryId={creditedSellerId} secondaryId={secondSellerId} onPrimaryChange={setCreditedSellerId} onSecondaryChange={setSecondSellerId} />
         </div>
       ) : null}
 

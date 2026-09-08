@@ -59,7 +59,7 @@ export function QrCodeGenerator({ initialValue = "" }: { initialValue?: string }
   }
 
   return (
-    <section className="border-t border-slate-100 pt-6">
+    <section>
       <div className="mb-4">
         <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-emerald-600">Genel QR aracı</p>
         <h3 className="mt-1 text-lg font-black tracking-tight text-slate-950">Herhangi bir bağlantı için QR kodu</h3>

@@ -18,6 +18,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   transactions  Transaction[]
+  leadNotes      LeadNote[]
   leads         Lead[]
   settlements   Settlement[]
   leadVisits    LeadVisit[]
@@ -33,11 +34,15 @@ model Member {
   createdAt           DateTime       @default(now())
   paidTransactions    Transaction[]  @relation("paidBy")
   soldTransactions    Transaction[]  @relation("soldBy")
+  createdTransactions Transaction[]  @relation("transactionCreatedBy")
+  transactionCredits  TransactionSeller[]
   sentSettlements     Settlement[]   @relation("settlementFrom")
   receivedSettlements Settlement[]   @relation("settlementTo")
   createdSettlements  Settlement[]   @relation("settlementCreatedBy")
   createdLeads        Lead[]         @relation("leadCreatedBy")
   leadVisits          LeadVisit[]
+  leadParticipants    LeadParticipant[]
+  leadNotes           LeadNote[]
 }
 
 model Profile {
@@ -213,6 +218,7 @@ model Transaction {
   date           DateTime
   createdAt      DateTime        @default(now())
   createdByName  String          @default("Bilinmiyor")
+  createdByMemberId String?
   paidByMemberId String?
   saleMode       SaleMode       @default(UNASSIGNED)
   soldByMemberId String?
@@ -221,11 +227,14 @@ model Transaction {
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   paidByMember   Member?         @relation("paidBy", fields: [paidByMemberId], references: [id], onDelete: SetNull)
   soldByMember   Member?         @relation("soldBy", fields: [soldByMemberId], references: [id], onDelete: SetNull)
+  createdByMember Member?        @relation("transactionCreatedBy", fields: [createdByMemberId], references: [id], onDelete: SetNull)
   lead           Lead?           @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  sellerCredits  TransactionSeller[]
 
   @@index([userId, date])
   @@index([paidByMemberId])
   @@index([soldByMemberId])
+  @@index([createdByMemberId])
   @@index([leadId])
 }
 
@@ -238,6 +247,10 @@ model Lead {
   contactInfo       String?
   followUpAt        DateTime?
   details           String?
+  googlePlaceId     String?
+  googleReviewUrl   String?
+  sourceMapsUrl     String?
+  wasSold           Boolean     @default(false)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   userId            String
@@ -245,11 +258,49 @@ model Lead {
   user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdByMember   Member?     @relation("leadCreatedBy", fields: [createdByMemberId], references: [id], onDelete: SetNull)
   visits            LeadVisit[]
+  participants      LeadParticipant[]
+  notes             LeadNote[]
   transactions      Transaction[]
 
   @@index([userId, followUpAt])
   @@index([userId, source, stage])
   @@index([createdByMemberId])
+  @@unique([userId, googlePlaceId])
+}
+
+model TransactionSeller {
+  transactionId String
+  memberId      String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  member        Member      @relation(fields: [memberId], references: [id], onDelete: Restrict)
+
+  @@id([transactionId, memberId])
+  @@index([memberId])
+}
+
+model LeadParticipant {
+  leadId   String
+  memberId String
+  lead     Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Restrict)
+
+  @@id([leadId, memberId])
+  @@index([memberId])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+  leadId    String
+  memberId  String
+  userId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
+  @@index([userId, createdAt])
 }
 
 model LeadVisit {

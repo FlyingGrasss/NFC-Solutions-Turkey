@@ -34,12 +34,31 @@ body {
 }
 
 .references-marquee-track {
-  animation: references-marquee 48s linear infinite;
+  /* Keep every row at the same deliberately gentle visual speed. */
+  --references-duration-per-item: 22s;
+  animation: references-marquee calc(var(--references-item-count) * var(--references-duration-per-item)) linear infinite;
   will-change: transform;
+}
+
+@media (min-width: 421px) {
+  .references-marquee-track {
+    --references-duration-per-item: 24.6s;
+  }
+}
+
+@media (min-width: 640px) {
+  .references-marquee-track {
+    --references-duration-per-item: 31.1s;
+  }
 }
 
 .references-marquee-track-reverse {
   animation-direction: reverse;
+}
+
+.references-marquee-viewport:hover .references-marquee-track,
+.references-marquee-viewport:focus-within .references-marquee-track {
+  animation-play-state: paused;
 }
 
 button,

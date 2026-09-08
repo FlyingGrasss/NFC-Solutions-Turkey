@@ -84,6 +84,6 @@ export async function submitContactAction(
     return { error: "Mesaj gönderilemedi. Lütfen tekrar deneyin." };
   }
 
-  revalidatePath("/admin");
+  revalidatePath("/admin/messages");
   return { success: "Mesajınız alındı. En kısa sürede size dönüş yapacağız." };
 }

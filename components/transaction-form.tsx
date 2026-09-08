@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { addTransactionAction, type FormState } from "@/app/actions";
 import { PayerPicker, type MemberOption } from "@/components/payer-picker";
 import { SaleOwnerPicker, type SaleModeValue } from "@/components/sale-owner-picker";
+import { SellerCreditPicker } from "@/components/seller-credit-picker";
 import { fieldInputClass, fieldLabelClass } from "@/lib/ui";
 
 type TransactionType = "INCOME" | "EXPENSE";
@@ -16,8 +17,9 @@ export function TransactionForm({
   members,
   currentMemberId,
   defaultPaidByMemberId = null,
-  defaultSaleMode = "SOLO",
+  defaultSaleMode = "UNASSIGNED",
   defaultSoldByMemberId = null,
+  defaultCreditedSellerIds = [],
   defaultLeadId = null,
   defaultDescription = "",
   defaultDate,
@@ -32,6 +34,7 @@ export function TransactionForm({
   defaultPaidByMemberId?: string | null;
   defaultSaleMode?: SaleModeValue;
   defaultSoldByMemberId?: string | null;
+  defaultCreditedSellerIds?: string[];
   defaultLeadId?: string | null;
   defaultDescription?: string;
   defaultDate?: string;
@@ -45,7 +48,9 @@ export function TransactionForm({
   const [type, setType] = useState<TransactionType>(defaultType);
   const [paidByMemberId, setPaidByMemberId] = useState<string | null>(defaultPaidByMemberId ?? currentMemberId ?? null);
   const [saleMode, setSaleMode] = useState<SaleModeValue>(defaultSaleMode);
-  const [soldByMemberId, setSoldByMemberId] = useState<string | null>(defaultSoldByMemberId ?? currentMemberId ?? null);
+  const [soldByMemberId, setSoldByMemberId] = useState<string | null>(defaultSoldByMemberId);
+  const [creditedSellerId, setCreditedSellerId] = useState(defaultCreditedSellerIds[0] ?? "");
+  const [secondSellerId, setSecondSellerId] = useState(defaultCreditedSellerIds[1] ?? "");
   const [date] = useState(defaultDate ?? new Date().toISOString().slice(0, 10));
   const onSuccessRef = useRef(onSuccess);
   const onErrorRef = useRef(onError);
@@ -71,6 +76,8 @@ export function TransactionForm({
       <input type="hidden" name="paidByMemberId" value={paidByMemberId ?? "SPLIT"} />
       <input type="hidden" name="saleMode" value={type === "INCOME" ? saleMode : "UNASSIGNED"} />
       <input type="hidden" name="soldByMemberId" value={type === "INCOME" ? soldByMemberId ?? "" : ""} />
+      <input type="hidden" name="creditedSellerId" value={type === "INCOME" ? creditedSellerId : ""} />
+      <input type="hidden" name="secondSellerId" value={type === "INCOME" ? secondSellerId : ""} />
       {defaultLeadId ? <input type="hidden" name="leadId" value={defaultLeadId} /> : null}
 
       <div className="grid grid-cols-2 gap-2">
@@ -100,7 +107,7 @@ export function TransactionForm({
 
       {type === "INCOME" ? (
         <div>
-          <span className={fieldLabelClass}>Satışı yapan kişi</span>
+          <span className={fieldLabelClass}>Kâr paylaşımı</span>
           <SaleOwnerPicker
             members={members}
             mode={saleMode}
@@ -108,6 +115,8 @@ export function TransactionForm({
             onModeChange={setSaleMode}
             onSoldByChange={setSoldByMemberId}
           />
+          <span className={`${fieldLabelClass} mt-4`}>Satış kredisi</span>
+          <SellerCreditPicker members={members} primaryId={creditedSellerId} secondaryId={secondSellerId} onPrimaryChange={setCreditedSellerId} onSecondaryChange={setSecondSellerId} />
         </div>
       ) : null}
 

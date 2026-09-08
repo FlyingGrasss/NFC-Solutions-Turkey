@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { type CSSProperties, useEffect, useState } from "react";
 
 type Reference = {
   name: string;
@@ -88,16 +89,17 @@ function ReferenceItem({ reference }: { reference: Reference }) {
   );
 }
 
-function ReferenceMarquee({ rowCount }: { rowCount: 2 | 3 }) {
+function ReferenceMarquee({ rowCount, isPageInactive }: { rowCount: 2 | 3; isPageInactive: boolean }) {
   return (
     <div className="grid gap-3">
       {Array.from({ length: rowCount }, (_, rowIndex) => {
         const rowReferences = references.filter((_, index) => index % rowCount === rowIndex);
         const movesRight = rowIndex % 2 === 1;
+        const trackStyle = { "--references-item-count": rowReferences.length } as CSSProperties;
 
         return (
-          <div key={rowIndex} className="overflow-hidden">
-            <div className={`references-marquee-track flex w-max focus-within:[animation-play-state:paused] hover:[animation-play-state:paused] ${movesRight ? "references-marquee-track-reverse" : ""}`}>
+          <div key={rowIndex} className="references-marquee-viewport overflow-hidden">
+            <div style={trackStyle} className={`references-marquee-track flex w-max ${isPageInactive ? "[animation-play-state:paused]" : ""} ${movesRight ? "references-marquee-track-reverse" : ""}`}>
               {[0, 1].map((groupIndex) => (
                 <div key={groupIndex} className="flex shrink-0 gap-3 pr-3" aria-hidden={groupIndex === 1}>
                   {rowReferences.map((reference, index) => (
@@ -114,6 +116,24 @@ function ReferenceMarquee({ rowCount }: { rowCount: 2 | 3 }) {
 }
 
 export function ReferencesCarousel() {
+  const [isPageInactive, setIsPageInactive] = useState(false);
+
+  useEffect(() => {
+    const pauseMarquee = () => setIsPageInactive(true);
+    const resumeMarquee = () => setIsPageInactive(false);
+    const handleVisibilityChange = () => setIsPageInactive(document.hidden);
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", pauseMarquee);
+    window.addEventListener("focus", resumeMarquee);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", pauseMarquee);
+      window.removeEventListener("focus", resumeMarquee);
+    };
+  }, []);
+
   return (
     <section id="referanslar" className="scroll-mt-8 border-y border-[#d6f6e2]/10 bg-[#0a2019]/60 py-24">
       <div className="mx-auto w-[min(100%-3rem,75rem)]">
@@ -124,10 +144,10 @@ export function ReferencesCarousel() {
         </div>
 
         <div className="mt-12 hidden overflow-hidden py-8 sm:block" aria-label="Referanslarımız">
-          <ReferenceMarquee rowCount={2} />
+          <ReferenceMarquee rowCount={2} isPageInactive={isPageInactive} />
         </div>
         <div className="mt-12 overflow-hidden py-8 sm:hidden" aria-label="Referanslarımız">
-          <ReferenceMarquee rowCount={3} />
+          <ReferenceMarquee rowCount={3} isPageInactive={isPageInactive} />
         </div>
       </div>
     </section>

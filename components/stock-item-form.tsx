@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { adjustStockAction, renameStockItemAction, type StockFormState } from "@/app/stock-actions";
+import { useModalScrollLock } from "@/components/use-modal-scroll-lock";
 import { fieldInputClass, fieldLabelClass, modalBackdropClass, modalCardClass } from "@/lib/ui";
 
 const initialState: StockFormState = {};
@@ -15,6 +16,8 @@ export function StockNameEditor({
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initialName);
+  useModalScrollLock(open);
+
   const [state, formAction, pending] = useActionState(async (previousState: StockFormState, formData: FormData) => {
     const result = await renameStockItemAction(previousState, formData);
 

@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { deleteLeadAction } from "@/app/lead-actions";
+import { useModalScrollLock } from "@/components/use-modal-scroll-lock";
 import { eyebrowClass, modalBackdropClass, modalCardClass } from "@/lib/ui";
 
 export function DeleteLeadButton({ id, personName }: { id: string; personName: string }) {
   const [open, setOpen] = useState(false);
+
+  useModalScrollLock(open);
 
   return (
     <>

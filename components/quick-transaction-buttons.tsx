@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { addTransactionAction } from "@/app/actions";
 import { TransactionForm } from "@/components/transaction-form";
 import type { MemberOption } from "@/components/payer-picker";
+import { useModalScrollLock } from "@/components/use-modal-scroll-lock";
 import { modalBackdropClass, modalCardClass } from "@/lib/ui";
 
 export function QuickTransactionButtons({
@@ -23,16 +24,15 @@ export function QuickTransactionButtons({
   const [type, setType] = useState<"INCOME" | "EXPENSE" | null>(null);
   const router = useRouter();
 
+  useModalScrollLock(Boolean(type));
+
   useEffect(() => {
     if (!type) return;
-    const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setType(null);
     };
-    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", closeOnEscape);
     return () => {
-      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [type]);
@@ -58,7 +58,8 @@ export function QuickTransactionButtons({
               members={members}
               currentMemberId={currentMemberId}
               defaultPaidByMemberId={currentMemberId}
-              defaultSoldByMemberId={currentMemberId}
+              defaultSaleMode="UNASSIGNED"
+              defaultSoldByMemberId={null}
               defaultDate={defaultDate}
               action={addTransactionAction}
               onBeforeSubmit={onBeforeSubmit}

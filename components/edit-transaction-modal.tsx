@@ -6,6 +6,7 @@ import {
   type EditableTransaction,
 } from "@/components/edit-transaction-form";
 import type { MemberOption } from "@/components/payer-picker";
+import { useModalScrollLock } from "@/components/use-modal-scroll-lock";
 import { eyebrowClass, modalBackdropClass, modalCardClass } from "@/lib/ui";
 
 export function EditTransactionModal({
@@ -17,23 +18,22 @@ export function EditTransactionModal({
 }) {
   const [open, setOpen] = useState(false);
 
+  useModalScrollLock(open);
+
   useEffect(() => {
     if (!open) {
       return;
     }
 
-    const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
       }
     };
 
-    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", closeOnEscape);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open]);

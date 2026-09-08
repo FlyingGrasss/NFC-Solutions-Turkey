@@ -124,6 +124,15 @@ type SaleValidation = {
   soldByMemberId: string | null;
 } | { error: string };
 
+async function parseSellerCredits(type: FormDataEntryValue | null, primaryValue: FormDataEntryValue | null, secondaryValue: FormDataEntryValue | null) {
+  if (type !== "INCOME") return { ids: [] } as const;
+  if (typeof primaryValue !== "string" || !primaryValue) return { error: "Birincil satıcıyı seçin." } as const;
+  const ids = [primaryValue, typeof secondaryValue === "string" ? secondaryValue : ""].filter(Boolean);
+  if (new Set(ids).size !== ids.length) return { error: "Aynı satıcı iki kez seçilemez." } as const;
+  const count = await prisma.member.count({ where: { id: { in: ids } } });
+  return count === ids.length ? { ids } as const : { error: "Satıcı seçimi geçersiz." } as const;
+}
+
 async function parsePaidByMemberId(value: FormDataEntryValue | null): Promise<PayerValidation> {
   if (value === null || value === "SPLIT") {
     return { id: null };
@@ -155,7 +164,8 @@ async function parseSaleFields(
       : null;
 
   if (!saleMode) return { error: "Satış biçimi geçersiz." };
-  if (saleMode === "JOINT" || saleMode === "UNASSIGNED") {
+  if (saleMode === "UNASSIGNED") return { error: "Kâr paylaşımını seçin." };
+  if (saleMode === "JOINT") {
     return { mode: saleMode, soldByMemberId: null };
   }
 
@@ -210,12 +220,14 @@ export async function addTransactionAction(
   const dateValue = formData.get("date");
   const paidByMember = await parsePaidByMemberId(formData.get("paidByMemberId"));
   const sale = await parseSaleFields(type, formData.get("saleMode"), formData.get("soldByMemberId"));
+  const sellerCredits = await parseSellerCredits(type, formData.get("creditedSellerId"), formData.get("secondSellerId"));
   const lead = await parseLeadId(formData.get("leadId"), session.user.id);
 
   if ("error" in paidByMember) {
     return { error: paidByMember.error };
   }
   if ("error" in sale) return { error: sale.error };
+  if ("error" in sellerCredits) return { error: sellerCredits.error };
   if ("error" in lead) return { error: lead.error };
 
   if (type !== "INCOME" && type !== "EXPENSE") {
@@ -254,16 +266,18 @@ export async function addTransactionAction(
       description,
       date,
       createdByName: member.name,
+      createdByMemberId: member.id,
       paidByMemberId: paidByMember.id,
       saleMode: sale.mode,
       soldByMemberId: sale.soldByMemberId,
       leadId: lead.id,
       userId: session.user.id,
+      sellerCredits: { create: sellerCredits.ids.map((memberId) => ({ memberId })) },
     },
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/admin");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin/finance");
   return { success: "Kayıt eklendi." };
 }
 
@@ -280,12 +294,14 @@ export async function updateTransactionAction(
   const dateValue = formData.get("date");
   const paidByMember = await parsePaidByMemberId(formData.get("paidByMemberId"));
   const sale = await parseSaleFields(type, formData.get("saleMode"), formData.get("soldByMemberId"));
+  const sellerCredits = await parseSellerCredits(type, formData.get("creditedSellerId"), formData.get("secondSellerId"));
   const lead = await parseLeadId(formData.get("leadId"), session.user.id);
 
   if ("error" in paidByMember) {
     return { error: paidByMember.error };
   }
   if ("error" in sale) return { error: sale.error };
+  if ("error" in sellerCredits) return { error: sellerCredits.error };
   if ("error" in lead) return { error: lead.error };
 
   if (typeof id !== "string" || !id) {
@@ -333,9 +349,11 @@ export async function updateTransactionAction(
       ? descriptionValue.trim().slice(0, 120)
       : "Açıklama yok";
 
-  await prisma.transaction.update({
-    where: { id: existingTransaction.id },
-    data: {
+  await prisma.$transaction([
+    prisma.transactionSeller.deleteMany({ where: { transactionId: existingTransaction.id } }),
+    prisma.transaction.update({
+      where: { id: existingTransaction.id },
+      data: {
       type,
       amountCents,
       description,
@@ -344,12 +362,14 @@ export async function updateTransactionAction(
       saleMode: sale.mode,
       soldByMemberId: sale.soldByMemberId,
       leadId: lead.id,
-    },
-  });
+      sellerCredits: { create: sellerCredits.ids.map((memberId) => ({ memberId })) },
+      },
+    }),
+  ]);
 
-  revalidatePath("/dashboard");
-  revalidatePath("/admin");
-  redirect("/admin");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin/finance");
+  return { success: "Kayıt güncellendi." };
 }
 
 export async function deleteTransactionAction(formData: FormData) {
@@ -367,8 +387,8 @@ export async function deleteTransactionAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/admin");
+  revalidatePath("/admin/transactions");
+  revalidatePath("/admin/finance");
 }
 
 export async function createSettlementAction(
@@ -416,8 +436,7 @@ export async function createSettlementAction(
     },
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/admin");
+  revalidatePath("/admin/finance");
 
   return { success: "Eşitleme kaydedildi." };
 }
