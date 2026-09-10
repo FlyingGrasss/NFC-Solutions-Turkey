@@ -15,7 +15,7 @@ import {
   type ProfileCustomButtonInput,
   type ProfileFields,
 } from "@/lib/profile-form";
-import { requireSession } from "@/lib/auth-helpers";
+import { requireAdminMember, requireSession } from "@/lib/auth-helpers";
 
 export type ProfileFormState = {
   error?: string;
@@ -158,6 +158,7 @@ export async function createProfileAction(
   formData: FormData,
 ): Promise<ProfileFormState> {
   await requireSession();
+  await requireAdminMember();
   const parsed = parseProfileFields(formData);
   const password = passwordValue(formData, true);
 
@@ -218,6 +219,7 @@ export async function updateProfileAction(
   formData: FormData,
 ): Promise<ProfileFormState> {
   await requireSession();
+  await requireAdminMember();
   const id = formData.get("id");
   const parsed = parseProfileFields(formData);
   const password = passwordValue(formData, false);

@@ -43,7 +43,7 @@ export function LoginForm({ defaultName = "" }: { defaultName?: string }) {
           htmlFor="password"
           className="mb-2 block text-sm font-semibold text-slate-700"
         >
-          Ortak şifre
+          Şifre
         </label>
         <input
           id="password"

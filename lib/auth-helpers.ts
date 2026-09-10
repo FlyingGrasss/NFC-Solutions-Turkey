@@ -43,3 +43,9 @@ export async function requireMember() {
 
   return member;
 }
+
+export async function requireAdminMember() {
+  const member = await requireMember();
+  if (member.role !== "ADMIN") redirect("/admin");
+  return member;
+}

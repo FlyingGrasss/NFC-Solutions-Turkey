@@ -33,7 +33,7 @@ export default async function SignInPage() {
           Hoş geldiniz
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Adınızı ve ortak şifrenizi girin; kayıtların yanında adınız görünsün.
+          Adınızı ve şifrenizi girin; kayıtların yanında adınız görünsün.
         </p>
 
         <LoginForm defaultName={member?.name} />

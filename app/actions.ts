@@ -3,12 +3,13 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { compare } from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { getPartnerMembers, getSettlementSuggestion } from "@/lib/finance";
 import {
   MEMBER_COOKIE,
-  requireMember,
+  requireAdminMember,
   requireSession,
 } from "@/lib/auth-helpers";
 
@@ -40,7 +41,12 @@ export async function signInAction(
     return { error: "Adınızı 2-40 karakter arasında girin." };
   }
 
-  if (typeof password !== "string" || password !== process.env.APP_PASSWORD) {
+  const existingMember = name ? await prisma.member.findFirst({ where: { name: { equals: name, mode: "insensitive" } } }) : null;
+  const appPassword = process.env.APP_PASSWORD ?? "";
+  const validPassword = typeof password === "string" && (existingMember?.role === "REVIEW_AGENT"
+    ? Boolean(existingMember.passwordHash && await compare(password, existingMember.passwordHash))
+    : password === appPassword);
+  if (!validPassword) {
     return { error: "Şifre hatalı. Tekrar deneyin." };
   }
 
@@ -62,7 +68,7 @@ export async function signInAction(
           await auth.api.signInEmail({
             body: {
               email: SHARED_AUTH_EMAIL,
-              password,
+              password: appPassword,
               rememberMe: true,
             },
             headers: requestHeaders,
@@ -77,7 +83,7 @@ export async function signInAction(
             body: {
               name: "Gelir Gider",
               email: SHARED_AUTH_EMAIL,
-              password,
+              password: appPassword,
               rememberMe: true,
             },
             headers: requestHeaders,
@@ -88,7 +94,7 @@ export async function signInAction(
           body: {
             name: "Gelir Gider",
             email: SHARED_AUTH_EMAIL,
-            password,
+            password: appPassword,
             rememberMe: true,
           },
           headers: requestHeaders,
@@ -96,11 +102,7 @@ export async function signInAction(
       }
     }
 
-    const member = await prisma.member.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
+    const member = existingMember ?? await prisma.member.create({ data: { name, role: "ADMIN" } });
 
     (await cookies()).set(MEMBER_COOKIE, member.id, {
       httpOnly: true,
@@ -124,13 +126,12 @@ type SaleValidation = {
   soldByMemberId: string | null;
 } | { error: string };
 
-async function parseSellerCredits(type: FormDataEntryValue | null, primaryValue: FormDataEntryValue | null, secondaryValue: FormDataEntryValue | null) {
+async function parseSellerCredits(type: FormDataEntryValue | null, value: FormDataEntryValue | null) {
   if (type !== "INCOME") return { ids: [] } as const;
-  if (typeof primaryValue !== "string" || !primaryValue) return { error: "Birincil satıcıyı seçin." } as const;
-  const ids = [primaryValue, typeof secondaryValue === "string" ? secondaryValue : ""].filter(Boolean);
-  if (new Set(ids).size !== ids.length) return { error: "Aynı satıcı iki kez seçilemez." } as const;
-  const count = await prisma.member.count({ where: { id: { in: ids } } });
-  return count === ids.length ? { ids } as const : { error: "Satıcı seçimi geçersiz." } as const;
+  if (typeof value !== "string" || !value) return { error: "Satışı gerçekte yapan kişiyi seçin." } as const;
+  const partners = getPartnerMembers(await prisma.member.findMany({ select: { id: true, name: true } }));
+  if (value === "JOINT") return partners.length === 2 ? { ids: partners.map((member) => member.id) } as const : { error: "Ortaklar bulunamadı." } as const;
+  return partners.some((member) => member.id === value) ? { ids: [value] } as const : { error: "Satıcı seçimi geçersiz." } as const;
 }
 
 async function parsePaidByMemberId(value: FormDataEntryValue | null): Promise<PayerValidation> {
@@ -213,14 +214,14 @@ export async function addTransactionAction(
   formData: FormData,
 ): Promise<FormState> {
   const session = await requireSession();
-  const member = await requireMember();
+  const member = await requireAdminMember();
   const type = formData.get("type");
   const amountValue = formData.get("amount");
   const descriptionValue = formData.get("description");
   const dateValue = formData.get("date");
   const paidByMember = await parsePaidByMemberId(formData.get("paidByMemberId"));
   const sale = await parseSaleFields(type, formData.get("saleMode"), formData.get("soldByMemberId"));
-  const sellerCredits = await parseSellerCredits(type, formData.get("creditedSellerId"), formData.get("secondSellerId"));
+  const sellerCredits = await parseSellerCredits(type, formData.get("salesAttribution"));
   const lead = await parseLeadId(formData.get("leadId"), session.user.id);
 
   if ("error" in paidByMember) {
@@ -286,7 +287,7 @@ export async function updateTransactionAction(
   formData: FormData,
 ): Promise<FormState> {
   const session = await requireSession();
-  await requireMember();
+  await requireAdminMember();
   const id = formData.get("id");
   const type = formData.get("type");
   const amountValue = formData.get("amount");
@@ -294,7 +295,7 @@ export async function updateTransactionAction(
   const dateValue = formData.get("date");
   const paidByMember = await parsePaidByMemberId(formData.get("paidByMemberId"));
   const sale = await parseSaleFields(type, formData.get("saleMode"), formData.get("soldByMemberId"));
-  const sellerCredits = await parseSellerCredits(type, formData.get("creditedSellerId"), formData.get("secondSellerId"));
+  const sellerCredits = await parseSellerCredits(type, formData.get("salesAttribution"));
   const lead = await parseLeadId(formData.get("leadId"), session.user.id);
 
   if ("error" in paidByMember) {
@@ -374,6 +375,7 @@ export async function updateTransactionAction(
 
 export async function deleteTransactionAction(formData: FormData) {
   const session = await requireSession();
+  await requireAdminMember();
   const id = formData.get("id");
 
   if (typeof id !== "string" || !id) {
@@ -396,7 +398,7 @@ export async function createSettlementAction(
   formData: FormData,
 ): Promise<FormState> {
   const session = await requireSession();
-  const member = await requireMember();
+  const member = await requireAdminMember();
   const allMembers = await prisma.member.findMany({ select: { id: true, name: true } });
   const members = getPartnerMembers(allMembers);
   const transactions = await prisma.transaction.findMany({

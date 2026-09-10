@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireMember, requireSession } from "@/lib/auth-helpers";
+import { requireAdminMember, requireSession } from "@/lib/auth-helpers";
 
 export type LeadFormState = {
   error?: string;
@@ -67,7 +67,7 @@ export async function addWalkInAction(
   formData: FormData,
 ): Promise<LeadFormState> {
   const session = await requireSession();
-  const member = await requireMember();
+  const member = await requireAdminMember();
   const parsed = parseWalkInFields(formData);
   if ("error" in parsed) return { error: parsed.error };
 
@@ -148,7 +148,7 @@ function parseLegacyLeadFields(formData: FormData) {
 
 export async function addLeadAction(_previousState: LeadFormState, formData: FormData): Promise<LeadFormState> {
   const session = await requireSession();
-  const member = await requireMember();
+  const member = await requireAdminMember();
   const parsed = parseLegacyLeadFields(formData);
   if ("error" in parsed) return { error: parsed.error };
   await prisma.lead.create({ data: { ...parsed.value, createdByMemberId: member.id, userId: session.user.id } });
@@ -158,6 +158,7 @@ export async function addLeadAction(_previousState: LeadFormState, formData: For
 
 export async function updateLeadAction(_previousState: LeadFormState, formData: FormData): Promise<LeadFormState> {
   const session = await requireSession();
+  await requireAdminMember();
   const id = formData.get("id");
   const parsed = parseLegacyLeadFields(formData);
   if (typeof id !== "string" || !id) return { error: "Takip bulunamadı." };
@@ -171,6 +172,7 @@ export async function updateLeadAction(_previousState: LeadFormState, formData: 
 
 export async function deleteLeadAction(formData: FormData) {
   const session = await requireSession();
+  await requireAdminMember();
   const id = formData.get("id");
   if (typeof id !== "string" || !id) return;
   await prisma.lead.deleteMany({ where: { id, userId: session.user.id } });

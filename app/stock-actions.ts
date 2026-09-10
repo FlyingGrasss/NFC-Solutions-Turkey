@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireMember, requireSession } from "@/lib/auth-helpers";
+import { requireAdminMember, requireSession } from "@/lib/auth-helpers";
 
 export type StockFormState = {
   error?: string;
@@ -47,7 +47,7 @@ export async function createStockItemAction(
   formData: FormData,
 ): Promise<StockFormState> {
   const session = await requireSession();
-  const member = await requireMember();
+  const member = await requireAdminMember();
   const nameValue = formData.get("name");
   const name = typeof nameValue === "string" ? nameValue.trim().slice(0, 100) : "";
   const quantity = parseWholeNumber(formData.get("quantity"), { allowZero: true });
@@ -100,7 +100,7 @@ export async function adjustStockAction(
   formData: FormData,
 ): Promise<StockFormState> {
   const session = await requireSession();
-  const member = await requireMember();
+  const member = await requireAdminMember();
   const itemId = formData.get("itemId");
   const direction = formData.get("direction");
   const amount = parseAdjustmentAmount(formData.get("amount"));
@@ -174,6 +174,7 @@ export async function renameStockItemAction(
   formData: FormData,
 ): Promise<StockFormState> {
   const session = await requireSession();
+  await requireAdminMember();
   const itemId = formData.get("itemId");
   const nameValue = formData.get("name");
   const name = typeof nameValue === "string" ? nameValue.trim().slice(0, 100) : "";

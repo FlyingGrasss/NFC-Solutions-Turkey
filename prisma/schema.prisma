@@ -31,6 +31,8 @@ model User {
 model Member {
   id                  String         @id @default(cuid())
   name                String         @unique
+  role                MemberRole     @default(ADMIN)
+  passwordHash        String?
   createdAt           DateTime       @default(now())
   paidTransactions    Transaction[]  @relation("paidBy")
   soldTransactions    Transaction[]  @relation("soldBy")
@@ -88,6 +90,11 @@ model Profile {
   facilities             ProfileFacility[]
   customButtons          ProfileCustomButton[]
   sessions               ProfileSession[]
+}
+
+enum MemberRole {
+  ADMIN
+  REVIEW_AGENT
 }
 
 model ProfileFacility {

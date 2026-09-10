@@ -4,7 +4,7 @@ import { AdminHeader } from "@/components/admin-header";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { NewStockItemForm, StockAdjustmentForm, StockNameEditor } from "@/components/stock-item-form";
 import { createStockItemAction } from "@/app/stock-actions";
-import { requireSession } from "@/lib/auth-helpers";
+import { requireAdminMember, requireSession } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
 import { emptyStateClass, eyebrowClass, panelClass } from "@/lib/ui";
 
@@ -24,6 +24,7 @@ const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
 
 export default async function StockPage() {
   const session = await requireSession();
+  await requireAdminMember();
   const [items, changes] = await Promise.all([
     prisma.stockItem.findMany({
       where: { userId: session.user.id },

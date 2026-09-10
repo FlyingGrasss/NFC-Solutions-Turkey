@@ -27,7 +27,8 @@ export function TransactionsPanel({ initialTransactions, members, currentMemberI
   const visible = pendingTransactions.filter((pending) => !initialTransactions.some((item) => item.amountCents === pending.amountCents && item.description === pending.description && item.date.slice(0, 10) === pending.date.slice(0, 10)));
   function beforeSubmit(formData: FormData) {
     const amount = typeof formData.get("amount") === "string" ? parseAmount(String(formData.get("amount"))) : null; const type = formData.get("type"); if (!amount || (type !== "INCOME" && type !== "EXPENSE")) return;
-    const creditedIds = [String(formData.get("creditedSellerId") ?? ""), String(formData.get("secondSellerId") ?? "")].filter(Boolean);
+    const attribution = String(formData.get("salesAttribution") ?? "");
+    const creditedIds = attribution === "JOINT" ? members.map((member) => member.id) : attribution ? [attribution] : [];
     const item: ClientTransaction = { id: `optimistic-${crypto.randomUUID()}`, type, amountCents: amount, description: String(formData.get("description") || "Açıklama yok"), date: `${String(formData.get("date") || defaultDate)}T12:00:00.000Z`, createdByName: currentMemberName, createdByMemberId: currentMemberId, paidByMemberId: formData.get("paidByMemberId") === "SPLIT" ? null : String(formData.get("paidByMemberId")), paidByName: members.find((member) => member.id === formData.get("paidByMemberId"))?.name ?? null, saleMode: formData.get("saleMode") === "SOLO" ? "SOLO" : formData.get("saleMode") === "JOINT" ? "JOINT" : "UNASSIGNED", soldByMemberId: String(formData.get("soldByMemberId") || "") || null, soldByName: members.find((member) => member.id === formData.get("soldByMemberId"))?.name ?? null, leadId: null, sellerCredits: creditedIds.map((id) => ({ memberId: id, name: members.find((member) => member.id === id)?.name ?? "" })) };
     setPendingTransactions((current) => [item, ...current]); return item.id;
   }

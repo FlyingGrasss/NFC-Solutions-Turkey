@@ -36,8 +36,7 @@ export function EditTransactionForm({
   const [paidByMemberId, setPaidByMemberId] = useState<string | null>(transaction.paidByMemberId);
   const [saleMode, setSaleMode] = useState<SaleModeValue>(transaction.saleMode);
   const [soldByMemberId, setSoldByMemberId] = useState<string | null>(transaction.soldByMemberId);
-  const [creditedSellerId, setCreditedSellerId] = useState(transaction.creditedSellerIds[0] ?? "");
-  const [secondSellerId, setSecondSellerId] = useState(transaction.creditedSellerIds[1] ?? "");
+  const [salesAttribution, setSalesAttribution] = useState(transaction.creditedSellerIds.length > 1 ? "JOINT" : transaction.creditedSellerIds[0] ?? "");
 
   useEffect(() => { if (state.success) onCancel(); }, [onCancel, state.success]);
 
@@ -48,8 +47,7 @@ export function EditTransactionForm({
       <input type="hidden" name="paidByMemberId" value={paidByMemberId ?? "SPLIT"} />
       <input type="hidden" name="saleMode" value={type === "INCOME" ? saleMode : "UNASSIGNED"} />
       <input type="hidden" name="soldByMemberId" value={type === "INCOME" ? soldByMemberId ?? "" : ""} />
-      <input type="hidden" name="creditedSellerId" value={type === "INCOME" ? creditedSellerId : ""} />
-      <input type="hidden" name="secondSellerId" value={type === "INCOME" ? secondSellerId : ""} />
+      <input type="hidden" name="salesAttribution" value={type === "INCOME" ? salesAttribution : ""} />
       <input type="hidden" name="leadId" value={transaction.leadId ?? ""} />
 
       <div>
@@ -68,8 +66,8 @@ export function EditTransactionForm({
         <div>
           <span className={fieldLabelClass}>Kâr paylaşımı</span>
           <SaleOwnerPicker members={members} mode={saleMode} soldByMemberId={soldByMemberId} onModeChange={setSaleMode} onSoldByChange={setSoldByMemberId} />
-          <span className={`${fieldLabelClass} mt-4`}>Satış kredisi</span>
-          <SellerCreditPicker members={members} primaryId={creditedSellerId} secondaryId={secondSellerId} onPrimaryChange={setCreditedSellerId} onSecondaryChange={setSecondSellerId} />
+          <span className={`${fieldLabelClass} mt-4`}>Satışı gerçekte kim yaptı?</span>
+          <SellerCreditPicker members={members} value={salesAttribution} onChange={setSalesAttribution} />
         </div>
       ) : null}
 

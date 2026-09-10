@@ -49,8 +49,7 @@ export function TransactionForm({
   const [paidByMemberId, setPaidByMemberId] = useState<string | null>(defaultPaidByMemberId ?? currentMemberId ?? null);
   const [saleMode, setSaleMode] = useState<SaleModeValue>(defaultSaleMode);
   const [soldByMemberId, setSoldByMemberId] = useState<string | null>(defaultSoldByMemberId);
-  const [creditedSellerId, setCreditedSellerId] = useState(defaultCreditedSellerIds[0] ?? "");
-  const [secondSellerId, setSecondSellerId] = useState(defaultCreditedSellerIds[1] ?? "");
+  const [salesAttribution, setSalesAttribution] = useState(defaultCreditedSellerIds.length > 1 ? "JOINT" : defaultCreditedSellerIds[0] ?? "");
   const [date] = useState(defaultDate ?? new Date().toISOString().slice(0, 10));
   const onSuccessRef = useRef(onSuccess);
   const onErrorRef = useRef(onError);
@@ -76,8 +75,7 @@ export function TransactionForm({
       <input type="hidden" name="paidByMemberId" value={paidByMemberId ?? "SPLIT"} />
       <input type="hidden" name="saleMode" value={type === "INCOME" ? saleMode : "UNASSIGNED"} />
       <input type="hidden" name="soldByMemberId" value={type === "INCOME" ? soldByMemberId ?? "" : ""} />
-      <input type="hidden" name="creditedSellerId" value={type === "INCOME" ? creditedSellerId : ""} />
-      <input type="hidden" name="secondSellerId" value={type === "INCOME" ? secondSellerId : ""} />
+      <input type="hidden" name="salesAttribution" value={type === "INCOME" ? salesAttribution : ""} />
       {defaultLeadId ? <input type="hidden" name="leadId" value={defaultLeadId} /> : null}
 
       <div className="grid grid-cols-2 gap-2">
@@ -115,8 +113,8 @@ export function TransactionForm({
             onModeChange={setSaleMode}
             onSoldByChange={setSoldByMemberId}
           />
-          <span className={`${fieldLabelClass} mt-4`}>Satış kredisi</span>
-          <SellerCreditPicker members={members} primaryId={creditedSellerId} secondaryId={secondSellerId} onPrimaryChange={setCreditedSellerId} onSecondaryChange={setSecondSellerId} />
+          <span className={`${fieldLabelClass} mt-4`}>Satışı gerçekte kim yaptı?</span>
+          <SellerCreditPicker members={members} value={salesAttribution} onChange={setSalesAttribution} />
         </div>
       ) : null}
 

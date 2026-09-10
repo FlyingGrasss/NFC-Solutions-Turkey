@@ -35,7 +35,7 @@ export async function generateGoogleReviewLinkAction(formData: FormData): Promis
   const session = await requireSession();
   const member = await requireMember();
   const value = formData.get("mapsUrl");
-  const together = formData.get("together") === "true";
+  const together = member.role === "ADMIN" && formData.get("together") === "true";
   if (typeof value !== "string" || !value.trim() || value.trim().length > 2_000) return { error: "Google Maps bağlantısını veya Place ID bilgisini girin." };
   const input = value.trim();
 

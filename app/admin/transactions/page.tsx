@@ -3,14 +3,14 @@ import { AdminHeader } from "@/components/admin-header";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { AdminNav } from "@/components/admin-nav";
 import { TransactionsPanel } from "@/components/admin-finance-panel";
-import { requireMember, requireSession } from "@/lib/auth-helpers";
+import { requireAdminMember, requireSession } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
 import { getPartnerMembers } from "@/lib/finance";
 
 export const metadata: Metadata = { title: "Gelir Gider | Yönetim", robots: { index: false, follow: false } };
 function today() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
 export default async function TransactionsPage() {
-  const session = await requireSession(); const currentMember = await requireMember();
+  const session = await requireSession(); const currentMember = await requireAdminMember();
   const [transactions, allMembers] = await Promise.all([
     prisma.transaction.findMany({ where: { userId: session.user.id }, include: { paidByMember: { select: { name: true } }, soldByMember: { select: { name: true } }, sellerCredits: { include: { member: { select: { name: true } } } } }, orderBy: [{ date: "desc" }, { createdAt: "desc" }], take: 100 }),
     prisma.member.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
