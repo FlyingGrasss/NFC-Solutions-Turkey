@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminRole } from "@/components/admin-access-context";
 
-export type AdminSection = "reviews" | "transactions" | "finance" | "leads" | "qr" | "profiles" | "stock" | "messages";
+export type AdminSection = "reviews" | "walkIns" | "transactions" | "finance" | "leads" | "qr" | "profiles" | "stock" | "messages";
 const links: Array<{ active: AdminSection; href: string; label: string }> = [
   { active: "reviews", href: "/admin", label: "Yorum & Saha" },
+  { active: "walkIns", href: "/admin/walk-ins", label: "Cold walk-in" },
   { active: "transactions", href: "/admin/transactions", label: "Gelir Gider" },
   { active: "finance", href: "/admin/finance", label: "Analiz" },
   { active: "leads", href: "/admin/leads", label: "Takipler" },
@@ -21,7 +22,7 @@ function sectionForPath(pathname: string): AdminSection { if (pathname === "/adm
 export function AdminNav({ active }: { active?: AdminSection }) {
   const pathname = usePathname();
   const role = useAdminRole();
-  const visibleLinks = role === "REVIEW_AGENT" ? links.filter((link) => link.active === "reviews") : links;
+  const visibleLinks = role === "REVIEW_AGENT" ? links.filter((link) => link.active === "reviews" || link.active === "walkIns") : links;
   const current = active ?? sectionForPath(pathname);
   const currentLabel = links.find((link) => link.active === current)?.label ?? "Yönetim";
   return <nav aria-label="Yönetim bölümleri" className="border-b border-slate-200">

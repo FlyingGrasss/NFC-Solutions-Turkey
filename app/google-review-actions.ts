@@ -63,7 +63,7 @@ export async function generateGoogleReviewLinkAction(formData: FormData): Promis
       data: { type: "CALL", source: "COLD_WALK_IN", stage: "UNCLASSIFIED", personName: resolved.placeName, googlePlaceId: resolved.placeId, googleReviewUrl: reviewUrl, sourceMapsUrl: input, wasSold: false, createdByMemberId: member.id, userId: session.user.id, participants: { create: partners.map((partner) => ({ memberId: partner.id })) } },
       select: { id: true },
     });
-    revalidatePath("/admin");
+    revalidatePath("/admin"); revalidatePath("/admin/walk-ins");
     return { leadId: lead.id, placeId: resolved.placeId, placeName: resolved.placeName, reviewUrl };
   } catch (error) {
     if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;

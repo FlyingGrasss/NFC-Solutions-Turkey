@@ -34,9 +34,9 @@ export function ComparisonSection({
     <section className={`${panelClass} mt-6`}>
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className={eyebrowClass}>Kişisel satış ve eşitleme</p>
-          <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">Kim ne kadar sattı, kim ne kadar almalı?</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Solo satışlar 2:1, birlikte yapılan satışlar 1:1 hesaplanır. Alınan para ve eşitleme transferleri satış geçmişini değiştirmez.</p>
+          <p className={eyebrowClass}>Kâr paylaşımı ve eşitleme</p>
+          <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">Kim ne kadar almalı?</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Bu bölüm kâr paylaşımı, ortak giderler ve gerçek para hareketine göre eşitleme tutarını hesaplar. Gerçek satıcı performansı üstteki satış atfında görünür.</p>
         </div>
         {action}
       </div>
@@ -58,16 +58,6 @@ export function ComparisonSection({
                   <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[0.65rem] font-black text-emerald-700">Satış sahibi</span>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Solo sattı</p>
-                    <p className="mt-1 text-lg font-black text-emerald-700">{formatCurrency(row.soldSoloCents)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Ortak payı</p>
-                    <p className="mt-1 text-lg font-black text-emerald-700">{formatCurrency(row.soldJointCents)}</p>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-200 pt-3">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Hak ediş</p>
                     <p className="mt-1 text-sm font-black text-slate-700">{formatCurrency(row.entitledIncomeCents - row.sharedExpenseCents)}</p>

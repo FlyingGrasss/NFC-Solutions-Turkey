@@ -15,7 +15,7 @@ export async function addColdWalkInNoteAction(formData: FormData) {
   const value = formData.get("text"); const note = typeof value === "string" ? value.trim().slice(0, 1000) : "";
   if (!lead || !note) return { error: "Not eklenemedi." };
   const created = await prisma.leadNote.create({ data: { text: note, leadId: lead.id, memberId: member.id, userId: session.user.id }, include: { member: { select: { name: true } } } });
-  revalidatePath("/admin");
+  revalidatePath("/admin"); revalidatePath("/admin/walk-ins");
   return { note: { id: created.id, text: created.text, createdAt: created.createdAt.toISOString(), memberName: created.member.name } };
 }
 
@@ -23,7 +23,7 @@ export async function setColdWalkInOutcomeAction(formData: FormData) {
   const session = await requireSession(); const lead = await ownedColdWalkIn(formData.get("leadId"), session.user.id);
   if (!lead) return { error: "İşletme bulunamadı." };
   const wasSold = formData.get("wasSold") === "true";
-  await prisma.lead.update({ where: { id: lead.id }, data: { wasSold } }); revalidatePath("/admin");
+  await prisma.lead.update({ where: { id: lead.id }, data: { wasSold } }); revalidatePath("/admin"); revalidatePath("/admin/walk-ins");
   return { success: true, wasSold };
 }
 
@@ -31,7 +31,7 @@ export async function renameColdWalkInAction(formData: FormData) {
   const session = await requireSession(); const lead = await ownedColdWalkIn(formData.get("leadId"), session.user.id);
   const value = formData.get("name"); const name = typeof value === "string" ? value.trim().replace(/\s+/g, " ").slice(0, 120) : "";
   if (!lead || !name) return { error: "Geçerli bir işletme adı girin." };
-  await prisma.lead.update({ where: { id: lead.id }, data: { personName: name } }); revalidatePath("/admin");
+  await prisma.lead.update({ where: { id: lead.id }, data: { personName: name } }); revalidatePath("/admin"); revalidatePath("/admin/walk-ins");
   return { success: true, name };
 }
 
@@ -50,6 +50,6 @@ export async function setColdWalkInOwnerAction(formData: FormData) {
     prisma.leadParticipant.deleteMany({ where: { leadId: lead.id } }),
     prisma.leadParticipant.createMany({ data: ids.map((memberId) => ({ leadId: lead.id, memberId })) }),
   ]);
-  revalidatePath("/admin"); revalidatePath("/admin/finance");
+  revalidatePath("/admin"); revalidatePath("/admin/walk-ins"); revalidatePath("/admin/finance");
   return { success: true, ids };
 }
