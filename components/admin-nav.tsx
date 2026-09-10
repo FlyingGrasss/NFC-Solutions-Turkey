@@ -22,7 +22,7 @@ function sectionForPath(pathname: string): AdminSection { if (pathname === "/adm
 export function AdminNav({ active }: { active?: AdminSection }) {
   const pathname = usePathname();
   const role = useAdminRole();
-  const visibleLinks = role === "REVIEW_AGENT" ? links.filter((link) => link.active === "reviews" || link.active === "walkIns") : links;
+  const visibleLinks = role === "REVIEW_AGENT" ? links.filter((link) => link.active === "reviews") : links;
   const current = active ?? sectionForPath(pathname);
   const currentLabel = links.find((link) => link.active === current)?.label ?? "Yönetim";
   return <nav aria-label="Yönetim bölümleri" className="border-b border-slate-200">
