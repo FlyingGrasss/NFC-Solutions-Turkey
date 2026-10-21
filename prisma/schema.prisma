@@ -390,3 +390,11 @@ model ContactMessage {
 
   @@index([createdAt])
 }
+
+model ShortLink {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  targetUrl String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

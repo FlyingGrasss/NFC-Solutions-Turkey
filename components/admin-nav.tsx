@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminRole } from "@/components/admin-access-context";
 
-export type AdminSection = "reviews" | "walkIns" | "transactions" | "finance" | "leads" | "qr" | "profiles" | "stock" | "messages";
+export type AdminSection = "reviews" | "walkIns" | "transactions" | "finance" | "leads" | "qr" | "profiles" | "stock" | "messages" | "shortLinks";
 const links: Array<{ active: AdminSection; href: string; label: string }> = [
   { active: "reviews", href: "/admin", label: "Yorum & Saha" },
   { active: "walkIns", href: "/admin/walk-ins", label: "Cold walk-in" },
@@ -15,6 +15,7 @@ const links: Array<{ active: AdminSection; href: string; label: string }> = [
   { active: "profiles", href: "/admin/profiles", label: "Profil kartları" },
   { active: "stock", href: "/admin/stock", label: "Stok" },
   { active: "messages", href: "/admin/messages", label: "Mesajlar" },
+  { active: "shortLinks", href: "/admin/links", label: "Kısa bağlantılar" },
 ];
 
 function sectionForPath(pathname: string): AdminSection { if (pathname === "/admin") return "reviews"; return links.find((link) => link.href !== "/admin" && pathname.startsWith(link.href))?.active ?? "reviews"; }

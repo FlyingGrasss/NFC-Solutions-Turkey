@@ -15,6 +15,8 @@ export function useModalScrollLock(open: boolean) {
     const previousBodyPosition = body.style.position;
     const previousBodyTop = body.style.top;
     const previousBodyWidth = body.style.width;
+    const adminShell = document.querySelector<HTMLElement>("[data-admin-panel-shell]");
+    const previousAdminShellOverflowY = adminShell?.style.overflowY;
 
     html.style.overflow = "hidden";
     html.style.overscrollBehavior = "none";
@@ -22,6 +24,7 @@ export function useModalScrollLock(open: boolean) {
     body.style.position = "fixed";
     body.style.top = `-${scrollY}px`;
     body.style.width = "100%";
+    if (adminShell) adminShell.style.overflowY = "hidden";
 
     return () => {
       html.style.overflow = previousHtmlOverflow;
@@ -30,6 +33,7 @@ export function useModalScrollLock(open: boolean) {
       body.style.position = previousBodyPosition;
       body.style.top = previousBodyTop;
       body.style.width = previousBodyWidth;
+      if (adminShell) adminShell.style.overflowY = previousAdminShellOverflowY ?? "";
       window.scrollTo(0, scrollY);
     };
   }, [open]);

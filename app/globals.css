@@ -24,6 +24,11 @@ body {
   color: var(--foreground);
 }
 
+.admin-panel-shell {
+  min-height: 100vh;
+  overflow-y: scroll;
+}
+
 @keyframes references-marquee {
   from {
     transform: translate3d(0, 0, 0);
