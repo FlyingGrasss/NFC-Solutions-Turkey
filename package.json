@@ -17,6 +17,7 @@
     "@better-auth/prisma-adapter": "^1.6.23",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.6.23",
     "locomotive-scroll": "^5.0.1",
