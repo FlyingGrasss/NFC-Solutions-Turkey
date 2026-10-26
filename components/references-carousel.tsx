@@ -23,6 +23,7 @@ const circularReferenceImages = new Set([
   "/references/rezan-pekdogan.jpg",
   "/references/onail-bodrum.jpg",
   "/references/merve-beauty.png",
+  "/references/gonca-ugur-kuafor.jpg",
 ]);
 
 const references: Reference[] = [
@@ -62,6 +63,13 @@ const references: Reference[] = [
   { name: "Yalı Çapkını", href: "https://www.instagram.com/yalicapkini_bodrum/", image: "/references/yali-capkini-instagram.jpg", imageClassName: "max-h-20 rounded-xl" },
   { name: "The Garden Restaurant Bar", href: "https://www.instagram.com/thegardenbodrum/", image: "/references/the-garden-bodrum-instagram.jpg", imageClassName: "max-h-20 rounded-xl" },
   { name: "Jay Jay Center", href: "https://www.instagram.com/jay_jay_center/", image: "/references/jay-jay-center.jpg", imageClassName: "max-h-16" },
+  { name: "Corner Cafe & More", href: "https://www.facebook.com/61573910826869/", image: "/references/corner-cafe-more.jpg" },
+  { name: "Gonca & Uğur Kuaför", href: "https://www.instagram.com/goncaugurkuafor/", image: "/references/gonca-ugur-kuafor.jpg" },
+  { name: "Capullo Cafe", href: "https://www.instagram.com/capullocoffee/", image: "/references/capullo-cafe.jpg" },
+  { name: "Büyük Adana Ocakbaşı", href: "https://www.instagram.com/buyukadanakebapocakbasi/", image: "/references/buyuk-adana-ocakbasi.jpg" },
+  { name: "Çağhan Baytekin Klinik", href: "https://www.instagram.com/op.drcaghanbaytekin/", image: "/references/caghan-baytekin-klinik.png" },
+  { name: "Kafkasya Gurme", href: "https://www.instagram.com/kafkasyagurme1958/", image: "/references/kafkasya-gurme.png" },
+  { name: "Şambali Tatlıcısı", href: "https://www.instagram.com/meshurhisaronusambalicisi/", image: "/references/sambali-tatlicisi.jpg" },
 ];
 
 function ReferenceItem({ reference }: { reference: Reference }) {

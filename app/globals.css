@@ -40,20 +40,20 @@ body {
 
 .references-marquee-track {
   /* Keep every row at the same deliberately gentle visual speed. */
-  --references-duration-per-item: 22s;
+  --references-duration-per-item: 19.8s;
   animation: references-marquee calc(var(--references-item-count) * var(--references-duration-per-item)) linear infinite;
   will-change: transform;
 }
 
 @media (min-width: 421px) {
   .references-marquee-track {
-    --references-duration-per-item: 24.6s;
+    --references-duration-per-item: 22.1s;
   }
 }
 
 @media (min-width: 640px) {
   .references-marquee-track {
-    --references-duration-per-item: 31.1s;
+    --references-duration-per-item: 28s;
   }
 }
 
